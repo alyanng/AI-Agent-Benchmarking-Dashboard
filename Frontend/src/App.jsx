@@ -1,18 +1,21 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import Home from './Home.jsx'
+import { useState } from "react";
+import ProjectForm from "./ProjectForm";
+import ProjectList from "./ProjectList";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [page, setPage] = useState("form"); // "form" or "list"
 
   return (
-  
-      <div id="Home">
-        <Home/>
+    <div className="App">
+      <h1>AI Agent Benchmarking Dashboard</h1>
+      <div>
+        <button onClick={() => setPage("form")}>Submit Project</button>
+        <button onClick={() => setPage("list")}>All Projects</button>
       </div>
-  )
+
+      {page === "form" ? <ProjectForm /> : <ProjectList />}
+    </div>
+  );
 }
 
-export default App
+export default App;

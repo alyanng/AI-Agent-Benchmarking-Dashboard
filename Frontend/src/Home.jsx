@@ -1,17 +1,13 @@
-import { useEffect } from "react";
-import { fetchUsers } from "./api/users"; 
+import { Link } from "react-router-dom";
 
 function Home() {
-    // coonect to backend
-  useEffect(() => {
-    fetchUsers().then(data => {
-      console.log(data);
-    });
-  }, []); 
-
   return (
     <div className="Home">
-      <h3>This is my Home page</h3>
+      <h1>Welcome to the AI Agent Dashboard</h1>
+      <p>This is the Home page.</p>
+      <Link to="/projects">
+        <button>Go to Project Submission</button>
+      </Link>
     </div>
   );
 }
