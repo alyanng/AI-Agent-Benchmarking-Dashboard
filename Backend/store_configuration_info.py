@@ -15,16 +15,16 @@ def connect_to_db():
     )
     return conn
 
-#Inserts a result into the database
-def insert_fixes(number_of_fixes, duration, tokens, project_id):
+#Inserts a configuration into the database
+def insert_configurations(system_prompt, model, project_id):
     conn = connect_to_db
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO results (number_of_fixes, duration, tokens, project_id) VALUES (%s, %s, %s, %s) RETURNING results_id;",
-        (number_of_fixes, duration, tokens, project_id)
+        "INSERT INTO results (number_of_fixes, duration, tokens, project_id) VALUES (%s, %s, %s, %s) RETURNING configuration_ID;",
+        (system_prompt, model, project_id)
     )
     new_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
     conn.close()
-    print(f"Inserted row with result_id {new_id}")
+    print(f"Inserted row with configuration_ID {new_id}")
