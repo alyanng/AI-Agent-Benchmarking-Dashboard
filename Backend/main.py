@@ -1,11 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import upload_ai_data
+
 
 app = FastAPI(title="Backend API")
 
 origins = [
     "http://localhost:5173",
+     "http://localhost:5174",
 ]
+
+
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,20 +20,9 @@ app.add_middleware(
     allow_methods=["*"],          # allow all HTTP methods
     allow_headers=["*"],          # allow all headers
 )
-#test
-@app.get("/users")
-def get_users():
-    return [
-        {"id": 1, "name": "Alice"},
-        {"id": 2, "name": "Bob"},
-    ]
 
-@app.get("/")
-def health_check():
-    return {"status": "ok"}
 
-@app.get("/hello")
-def hello(name: str = "world"):
-    return {"message": f"Hello, {name}!"}
+app.include_router(upload_ai_data.router)
+
 
 
