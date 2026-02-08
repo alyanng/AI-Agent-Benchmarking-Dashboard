@@ -1,0 +1,31 @@
+
+{
+  "project_name": "UserService",
+  "project_github_url": "https://github.com/company/user-service",
+  "task_prompt_timestamp": "2026-02-05T14:30:00Z",
+  "number_of_fixes": 1,
+  "total_time_spent_minutes": 20,
+  "number_of_errors_from_raygun": 1,
+  "errors": [
+    {
+      "error_id": "abc123",
+      "error_type": "NullPointerException",
+      "was_fixed": true
+    },
+    {
+      "error_id": "abc124",
+      "error_type": "IndexOutOfBoundsException",
+      "was_fixed": false
+    }
+  ],
+  "summary": {
+    "total_errors_identified": 1,
+    "errors_fixed": 1,
+    "errors_not_fixed": 0,
+    "deployment_correlation": "Introduced in v2.3.1",
+    "recommendations": [
+      "Add null checks before method calls",
+      "Consider using Optional for nullable return values"
+    ]
+  }
+}
