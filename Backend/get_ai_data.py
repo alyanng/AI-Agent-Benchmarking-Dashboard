@@ -1,15 +1,10 @@
 from fastapi import APIRouter
-from configuration_info import get_configurations
-from results_info import get_results
+from results_and_configuration_info import get_config_results
 
 router = APIRouter()
 
-@router.get("/get_configurations")
+@router.get("/get_cofig_data")
 async def get_configurations(project_id: int):
-    configurations = get_configurations(project_id)
+    configurations = get_config_results(project_id)
     return configurations
 
-@router.get("/get_results")
-async def get_results(project_id: int):
-    results = get_results(project_id)
-    return results
