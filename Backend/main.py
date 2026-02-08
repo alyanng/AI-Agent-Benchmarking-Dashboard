@@ -1,6 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import upload_ai_data
+from dotenv import load_dotenv
+from pathlib import Path
+from database import get_conn
+
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 
 app = FastAPI(title="Backend API")
@@ -23,6 +29,29 @@ app.add_middleware(
 
 
 app.include_router(upload_ai_data.router)
+
+@app.get("/api/errors")
+def list_errors():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT error_id, error_type, was_fixed, project_id
+        FROM error_records
+        ORDER BY error_id
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    return [
+        {
+            "error_id": r[0],
+            "error_type": r[1],
+            "was_fixed": r[2],
+            "project_id": r[3],
+        }
+        for r in rows
+    ]
 
 
 

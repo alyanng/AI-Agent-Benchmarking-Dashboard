@@ -2,6 +2,9 @@ import { useState } from 'react'
 import './App.css'
 import Home from './Home.jsx'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Errors from "./Errors";
+
 function App() {
  
 
@@ -11,6 +14,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         {/* <Route path="/project_page" element={<ProjectPage />} /> */}
+        <Route path="/Errors" element={<Errors />} />
+        
       </Routes>
     </BrowserRouter>
 

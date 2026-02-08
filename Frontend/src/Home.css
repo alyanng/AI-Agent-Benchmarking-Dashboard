@@ -20,7 +20,7 @@ box-sizing: border-box;
 padding: 50px;
 }
 
-#review_button{
+#review_button, #error_button {
 
     background-color: rgb(249, 218,85) ;
     width: 30%;
