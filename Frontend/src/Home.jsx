@@ -1,17 +1,24 @@
 import { useEffect } from "react";
-import { fetchUsers } from "./api/users"; 
+// import { fetchUsers } from "./api/users"; 
+import FileUploadwithtext from "./FileUploadwithtext";
+import NavBar from "./NavBar";
+import './Home.css'
+import { useNavigate } from "react-router-dom";
 
 function Home() {
-    // coonect to backend
-  useEffect(() => {
-    fetchUsers().then(data => {
-      console.log(data);
-    });
-  }, []); 
+
 
   return (
     <div className="Home">
-      <h3>This is my Home page</h3>
+      
+          <div className="Home-NavBar"><NavBar/> </div>
+          <div className="review">
+ <h3>Review my record</h3>
+ <button id="review_button" onClick={() => navigate("/project_page")}>Review</button></div>
+      
+    
+  <FileUploadwithtext/>
+
     </div>
   );
 }
