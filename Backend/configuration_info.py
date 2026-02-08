@@ -23,11 +23,11 @@ def insert_configurations(system_prompt, model, project_id):
         "INSERT INTO configuration (system_prompt, model, project_id) VALUES (%s, %s, %s) RETURNING configuration_ID;",
         (system_prompt, model, project_id)
     )
-    new_id = cur.fetchone()[0]
+    config_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
     conn.close()
-    print(f"Inserted row with configuration_ID {new_id}")
+    return config_id
 
 #Fetches configurations of a project from database and returns it as an array
 def get_configurations(project_id):

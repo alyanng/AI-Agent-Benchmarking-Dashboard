@@ -28,3 +28,23 @@ def insert_fixes(number_of_fixes, duration, tokens, project_id):
     cur.close()
     conn.close()
     print(f"Inserted row with result_id {new_id}")
+
+#Fetches results of a project from database and returns it as an array
+def get_results(project_id):
+    conn = connect_to_db()
+    cur = conn.cursor()
+    cur.execute("SELECT restuls_id, number_of_fixes, duration FROM results WHERE project_ID = %s ORDER BY results_id DESC"
+    (project_id,)           
+    ) 
+    rows = cur.fetchall()
+
+    results =[]
+    for row in rows:
+        results.append({
+            "id": row[0],
+            "fixes":row[1],
+            "duration": row[2],
+        })
+    cur.close()
+    conn.close()
+    return results
