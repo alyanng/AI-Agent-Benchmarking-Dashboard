@@ -34,6 +34,9 @@ origins = [
     "http://127.0.0.1:8000",  # Swagger UI
 ]
 
+
+app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
