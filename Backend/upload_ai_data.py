@@ -1,7 +1,8 @@
 from fastapi import APIRouter,UploadFile,File,Form
 import json
 from typing import Optional
-
+from store_results_info import insert_fixes
+from configuration_info import insert_configurations
 
 router = APIRouter()
 
@@ -25,8 +26,24 @@ async def upload_ai_json(file:UploadFile=File(...), prompt: Optional[str] = Form
         "total_time_spent_minutes": data.get("total_time_spent_minutes"),
         "number_of_errors_from_raygun": data.get("number_of_errors_from_raygun"),
         "errors": data.get("errors"),
-        "prompt": prompt
+        "prompt": prompt,
+        "fixes": data.get("number_of_fixes")
     }
+
+    #Calls function from store_results_info file to insert results into db
+    insert_fixes(
+        number_of_fixes=parsed_data.get("fixes", 0),
+        duration=parsed_data.get("total_time_spent_minutes", 0),
+        tokens = 0,
+        project_id = 1 #Refactored to get specific project id of chosen project
+    )
+
+    #Calls function from store_configurations_info file to insert configuration into db
+    insert_configurations(
+        system_prompt=parsed_data.get("prompt"),
+        model = "",
+        project_id = 1 
+    )
 
     return {
         "success": True,
