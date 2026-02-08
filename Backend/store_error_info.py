@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import psycopg2
 from dataclasses import dataclass
 from pathlib import Path
+from database import get_conn
 
 @dataclass
 class ErrorRecord:
@@ -12,6 +13,47 @@ class ErrorRecord:
     error_type: str
     was_fixed: bool
     project_id: str
+
+# store_error_info.py 
+
+from database import get_conn
+
+def save_error_records(errors: list, project_id: str = "1") -> int:
+    """
+    Save error records into postgres.
+    Returns number of newly inserted rows.
+    """
+    conn = get_conn()
+    inserted = 0
+
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                for e in errors:
+                    error_id = e.get("error_id")
+                    error_type = e.get("error_type")
+                    was_fixed = e.get("was_fixed", False)
+
+                    if not error_id or not error_type:
+                        continue
+
+                    cur.execute(
+                        """
+                        INSERT INTO error_records
+                        (error_id, error_type, was_fixed, project_id)
+                        VALUES (%s, %s, %s, %s)
+                        ON CONFLICT (error_id) DO NOTHING
+                        """,
+                        (str(error_id), str(error_type), bool(was_fixed), project_id)
+                    )
+
+                    if cur.rowcount == 1:
+                        inserted += 1
+    finally:
+        conn.close()
+
+    return inserted
+
 
 def load_input_json(json_path: Path) -> dict:
     if not json_path.exists():
@@ -158,19 +200,21 @@ def main():
     json_path = Path(args.json).expanduser().resolve()
     input_json = load_input_json(json_path)
 
-
-    project_name = input_json["project_name"]
+    # project_name = input_json["project_name"]
     errors = input_json["errors"]
 
-    records: list[ErrorRecord] = []
-    for e in errors:
-        record = ErrorRecord(
-            error_id=e["error_id"],
-            error_type=e["error_type"],
-            was_fixed=e["was_fixed"],
-            project_id="1"
-        )
-        records.append(record)
+    # records: list[ErrorRecord] = []
+    # for e in errors:
+    #     record = ErrorRecord(
+    #         error_id=e["error_id"],
+    #         error_type=e["error_type"],
+    #         was_fixed=e["was_fixed"],
+    #         project_id="1"
+    #     )
+    #     records.append(record)
+    
+    inserted = save_error_records(errors, project_id="1")
+    print(f"Inserted {inserted} error records.")
 
     # print("Parsed error records:\n")
     # for r in records:
@@ -181,51 +225,51 @@ def main():
     #         f"Project: {r.project_id}"
     #     )
 
-    conn = psycopg2.connect(
-    host=os.getenv("POSTGRES_HOST"),
-    port=os.getenv("POSTGRES_PORT"),
-    dbname=os.getenv("POSTGRES_DB"),
-    user=os.getenv("POSTGRES_USER"),
-    password=os.getenv("POSTGRES_PASSWORD")
-    )
+    # conn = psycopg2.connect(
+    # host=os.getenv("POSTGRES_HOST"),
+    # port=os.getenv("POSTGRES_PORT"),
+    # dbname=os.getenv("POSTGRES_DB"),
+    # user=os.getenv("POSTGRES_USER"),
+    # password=os.getenv("POSTGRES_PASSWORD")
+    # )
 
     # print("HOST:", os.getenv("POSTGRES_HOST"))
     # print("USER:", os.getenv("POSTGRES_USER"))
     # print("PASSWORD:", os.getenv("POSTGRES_PASSWORD"))
 
-    cur = conn.cursor()
+    # cur = conn.cursor()
 
-    for r in records:
-        cur.execute(
-            """
-            INSERT INTO error_records
-            (error_id, error_type, was_fixed, project_id)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (error_id) DO NOTHING
-            """,
-            (r.error_id, r.error_type, r.was_fixed, r.project_id)
-        )
+    # for r in records:
+    #     cur.execute(
+    #         """
+    #         INSERT INTO error_records
+    #         (error_id, error_type, was_fixed, project_id)
+    #         VALUES (%s, %s, %s, %s)
+    #         ON CONFLICT (error_id) DO NOTHING
+    #         """,
+    #         (r.error_id, r.error_type, r.was_fixed, r.project_id)
+    #     )
 
-    conn.commit()
-    print("error records inserted successfully.")
+    # conn.commit()
+    # print("error records inserted successfully.")
 
-    cur.execute(
-        "SELECT error_id, error_type, was_fixed, project_id FROM error_records"
-    )
-    rows = cur.fetchall()
+    # cur.execute(
+    #     "SELECT error_id, error_type, was_fixed, project_id FROM error_records"
+    # )
+    # rows = cur.fetchall()
 
-    print("\ndata from postgre：")
-    for row in rows:
-        error_id, error_type, was_fixed, project_id = row
-        print(
-            f"Error ID: {error_id} | "
-            f"Type: {error_type} | "
-            f"Was Fixed: {was_fixed} | "
-            f"Project: {project_id}"
-        )
+    # print("\ndata from postgre：")
+    # for row in rows:
+    #     error_id, error_type, was_fixed, project_id = row
+    #     print(
+    #         f"Error ID: {error_id} | "
+    #         f"Type: {error_type} | "
+    #         f"Was Fixed: {was_fixed} | "
+    #         f"Project: {project_id}"
+    #     )
 
-    cur.close()
-    conn.close()
+    # cur.close()
+    # conn.close()
 
 
 if __name__ == "__main__":

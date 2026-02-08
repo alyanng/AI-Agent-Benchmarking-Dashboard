@@ -1,6 +1,7 @@
 from fastapi import APIRouter,UploadFile,File,Form
 import json
 from typing import Optional
+from store_error_info import save_error_records
 
 
 router = APIRouter()
@@ -28,8 +29,14 @@ async def upload_ai_json(file:UploadFile=File(...), prompt: Optional[str] = Form
         "prompt": prompt
     }
 
+    errors = parsed_data.get("errors", [])
+    inserted = save_error_records(errors, project_id="1")
+
+
     return {
         "success": True,
         "message":"file received",
+        "total_errors_in_file": len(errors),
+        "inserted_new_rows": inserted
         
    }

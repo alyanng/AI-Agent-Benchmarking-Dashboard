@@ -30,6 +30,8 @@ app.add_middleware(
 
 app.include_router(upload_ai_data.router)
 
+
+# Temporary endpoint to list all error records for testing
 @app.get("/api/errors")
 def list_errors():
     conn = get_conn()
