@@ -4,27 +4,23 @@ import NavBar from "./NavBar";
 
 async function configurationPage(project_id) {
     const [configurations, setConfigurations] = useState([])
-    const[results, setResults] = useState([])
+
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
     
     useEffect(() => {
         const fetchData = async () => {
-            const configResponse = await fetch (`${API_BASE_URL}/get_configurations?project_id=${project_id}`)
+            const configResponse = await fetch (`${API_BASE_URL}/get_cofig_data?project_id=${project_id}`)
             const configData = await configResponse.json()
             setConfigurations(configData)
 
-            const resultsResponse = await fetch (`${API_BASE_URL}/get_results?project_id=${project_id}`)
-            const resultsData = await resultsResponse.json()
-            setResults(resultsData)
+
         }
 
         fetchData()
     }, [project_id])
 
-    const combineData = configurations.map(config => {
-        const result = results.find(r =>r.configiration_id === config_id)
-    })
+
     
     return (
         <div>
