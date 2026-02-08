@@ -10,16 +10,13 @@ function Home() {
 
   return (
     <div className="Home">
+      <div className="Home-NavBar"><NavBar/> </div>
+      <div className="review">
+      <h3>Review my record</h3>
+      <button id="review_button" onClick={() => navigate("/project_page")}>Review</button>
+      <button id="error_button" onClick={() => navigate("/errors")}>Error Log</button></div>
       
-          <div className="Home-NavBar"><NavBar/> </div>
-          <div className="review">
- <h3>Review my record</h3>
- <button id="review_button" onClick={() => navigate("/project_page")}>Review</button>
- <button id="error_button" onClick={() => navigate("/Errors")}>Errors</button></div>
-      
-    
-  <FileUploadwithtext/>
-
+      <FileUploadwithtext/>
     </div>
   );
 }
