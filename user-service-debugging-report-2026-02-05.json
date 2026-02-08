@@ -8,15 +8,100 @@
   "number_of_errors_from_raygun": 1,
   "errors": [
     {
-      "error_id": "abc123",
-      "error_type": "NullPointerException",
-      "was_fixed": true
-    },
+      "error_id": "269815739353",
+       "error_type": "FileNotFoundException",
+       "was_fixed": false
+     },
     {
-      "error_id": "abc124",
-      "error_type": "IndexOutOfBoundsException",
+       "error_id": "269876052491",
+       "error_type": "InputMismatchException",
       "was_fixed": false
-    }
+    },
+     {
+       "error_id": "269876091818",
+       "error_type": "InputMismatchException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876068714",
+       "error_type": "InputMismatchException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876067042",
+       "error_type": "InputMismatchException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876064592",
+       "error_type": "CompilationError",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876081690",
+       "error_type": "NoSuchElementException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876079187",
+       "error_type": "NoSuchElementException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876024655",
+       "error_type": "NoSuchElementException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876058691",
+       "error_type": "NoSuchElementException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876080924",
+       "error_type": "IndexOutOfBoundsException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876079932",
+       "error_type": "IndexOutOfBoundsException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876065004",
+       "error_type": "IndexOutOfBoundsException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876074232",
+       "error_type": "NullPointerException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876069262",
+       "error_type": "NullPointerException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876072932",
+       "error_type": "IllegalArgumentException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "269876055758",
+       "error_type": "ArithmeticException",
+       "was_fixed": true
+     },
+     {
+       "error_id": "LOGIC_ERROR_001",
+       "error_type": "LogicError",
+       "was_fixed": true
+     },
+     {
+       "error_id": "LOGIC_ERROR_002",
+       "error_type": "LogicError",
+       "was_fixed": true
+     }
   ],
   "summary": {
     "total_errors_identified": 1,

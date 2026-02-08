@@ -14,7 +14,6 @@ class ErrorRecord:
     was_fixed: bool
     project_id: str
 
-# store_error_info.py 
 
 from database import get_conn
 
