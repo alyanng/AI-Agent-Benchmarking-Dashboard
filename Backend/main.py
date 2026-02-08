@@ -4,6 +4,7 @@ import upload_ai_data
 from dotenv import load_dotenv
 from pathlib import Path
 from database import get_conn
+import get_ai_data
 
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -29,6 +30,7 @@ app.add_middleware(
 
 
 app.include_router(upload_ai_data.router)
+app.include_router(get_ai_data.router)
 
 @app.get("/api/errors")
 def list_errors():

@@ -29,25 +29,54 @@ def insert_configurations(system_prompt, model, project_id):
     conn.close()
     return config_id
 
+#Inserts a result into the database
+def insert_fixes(number_of_fixes, duration, tokens, project_id, config_id):
+    conn = connect_to_db
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO results (number_of_fixes, duration, tokens, project_id, configuration_id) VALUES (%s, %s, %s, %s, %s) RETURNING results_id;",
+        (number_of_fixes, duration, tokens, project_id, config_id)
+    )
+    new_id = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
+    conn.close()
+    print(f"Inserted row with result_id {new_id}")
+
 #Fetches configurations of a project from database and returns it as an array
-def get_configurations(project_id):
+def get_config_results(project_id):
     conn = connect_to_db()
     cur = conn.cursor()
-    cur.execute("SELECT configuration_ID, system_prompt, model, project_id FROM configuration WHERE project_ID = %s ORDER BY configuration_ID DESC"
-    (project_id,)           
-    ) 
+    cur.execute(
+    """
+    SELECT 
+        c.configuration_ID,
+        c.system_prompt,
+        c.model,
+        r.number_of_fixes,
+        r.duration
+    FROM configuration c
+    LEFT JOIN results r ON c.configuration_ID = r.configuration_id
+    WHERE c.project_id = %s
+    ORDER BY c.configuration_id DESC
+    """,
+    (project_id,)
+)
     rows = cur.fetchall()
 
-    configurations =[]
+    configAndResults =[]
     for row in rows:
-        configurations.append({
-            "id": row[0],
+        configAndResults.append({
+            "configid": row[0],
             "prompt":row[1] or "",
             "model": row[2],
+            "fixes":row[3],
+            "duration": row[4],
         })
     cur.close()
     conn.close()
-    return configurations
+    return configAndResults
+
     
     
 
