@@ -32,16 +32,26 @@ app.include_router(upload_ai_data.router)
 app.include_router(get_ai_data.router)
 
 
-# Temporary endpoint to list all error records for testing
+# Endpoint to list error records, optionally filtered by configuration_id
 @app.get("/api/errors")
-def list_errors():
+def list_errors(configuration_id: int = None):
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("""
-        SELECT error_id, error_type, was_fixed, project_id, configuration_id
-        FROM error_records
-        ORDER BY error_id
-    """)
+    
+    if configuration_id is not None:
+        cur.execute("""
+            SELECT error_id, error_type, was_fixed, project_id, configuration_id
+            FROM error_records
+            WHERE configuration_id = %s
+            ORDER BY error_id
+        """, (configuration_id,))
+    else:
+        cur.execute("""
+            SELECT error_id, error_type, was_fixed, project_id, configuration_id
+            FROM error_records
+            ORDER BY error_id
+        """)
+    
     rows = cur.fetchall()
     cur.close()
     conn.close()

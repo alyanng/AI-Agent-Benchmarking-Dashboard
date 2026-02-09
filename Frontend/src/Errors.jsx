@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import NavBar from './NavBar';
+import { useParams } from 'react-router-dom';
 
 export default function Errors() {
+  const { configurationId } = useParams();
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState("");
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     async function load() {
@@ -12,7 +15,12 @@ export default function Errors() {
         setLoading(true);
         setErrMsg("");
 
-        const res = await fetch("http://localhost:8000/api/errors");
+        let url = `${API_BASE_URL}/api/errors`;
+        if (configurationId) {
+          url += `?configuration_id=${configurationId}`;
+        }
+
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
@@ -24,7 +32,7 @@ export default function Errors() {
       }
     }
     load();
-  }, []);
+  }, [configurationId, API_BASE_URL]);
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
   if (errMsg) return <div style={{ padding: 16, color: "red" }}>Error: {errMsg}</div>;

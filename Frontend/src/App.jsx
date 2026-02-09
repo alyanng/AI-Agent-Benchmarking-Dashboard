@@ -16,6 +16,7 @@ function App() {
         <Route path="/" element={<Home />} />
         {/* <Route path="/project_page" element={<ProjectPage />} /> */}
         <Route path="/errors" element={<Errors />} />
+        <Route path="/errors/:configurationId" element={<Errors />} />
         <Route path="/configurations/:projectId" element={<Configurations />} />
         
       </Routes>
