@@ -32,7 +32,7 @@ def save_error_records(errors: list, project_id: str = "1", config_id: int = Non
                     error_id = e.get("error_id")
                     error_type = e.get("error_type")
                     was_fixed = e.get("was_fixed", False)
-                    config_id = config_id  # This can be used to link errors to a specific configuration if needed
+                    configuration_id = config_id
 
                     if not error_id or not error_type:
                         continue
@@ -44,7 +44,7 @@ def save_error_records(errors: list, project_id: str = "1", config_id: int = Non
                         VALUES (%s, %s, %s, %s, %s)
                         ON CONFLICT (error_id) DO NOTHING
                         """,
-                        (str(error_id), str(error_type), bool(was_fixed), project_id, config_id)
+                        (str(error_id), str(error_type), bool(was_fixed), project_id, configuration_id)
                     )
 
                     if cur.rowcount == 1:
@@ -195,21 +195,22 @@ def main():
         default="user-service-debugging-report-2026-02-05.json",
         help="Path to input JSON file (default: input.json)"
     )
-    args = parser.parse_args()
+    
 
     parser.add_argument(
     "--config-id",
     type=int,
     default=None,
     help="configuration_id to link error_records to (optional)"
-)
+    )
+    args = parser.parse_args()
 
 
     json_path = Path(args.json).expanduser().resolve()
     input_json = load_input_json(json_path)
 
     # project_name = input_json["project_name"]
-    errors = input_json["errors"]
+    errors = input_json.get("errors", [])
     config_id = args.config_id  
 
     # records: list[ErrorRecord] = []
