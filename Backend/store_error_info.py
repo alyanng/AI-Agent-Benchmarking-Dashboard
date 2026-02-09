@@ -13,11 +13,11 @@ class ErrorRecord:
     error_type: str
     was_fixed: bool
     project_id: str
-
+    config_id: int
 
 from database import get_conn
 
-def save_error_records(errors: list, project_id: str = "1") -> int:
+def save_error_records(errors: list, project_id: str = "1", config_id: int = None) -> int:
     """
     Save error records into postgres.
     Returns number of newly inserted rows.
@@ -32,6 +32,7 @@ def save_error_records(errors: list, project_id: str = "1") -> int:
                     error_id = e.get("error_id")
                     error_type = e.get("error_type")
                     was_fixed = e.get("was_fixed", False)
+                    config_id = config_id  # This can be used to link errors to a specific configuration if needed
 
                     if not error_id or not error_type:
                         continue
@@ -39,11 +40,11 @@ def save_error_records(errors: list, project_id: str = "1") -> int:
                     cur.execute(
                         """
                         INSERT INTO error_records
-                        (error_id, error_type, was_fixed, project_id)
-                        VALUES (%s, %s, %s, %s)
+                        (error_id, error_type, was_fixed, project_id, configuration_id)
+                        VALUES (%s, %s, %s, %s, %s)
                         ON CONFLICT (error_id) DO NOTHING
                         """,
-                        (str(error_id), str(error_type), bool(was_fixed), project_id)
+                        (str(error_id), str(error_type), bool(was_fixed), project_id, config_id)
                     )
 
                     if cur.rowcount == 1:
@@ -201,6 +202,7 @@ def main():
 
     # project_name = input_json["project_name"]
     errors = input_json["errors"]
+    config_id = None  # This can be set if you want to link errors to a specific configuration
 
     # records: list[ErrorRecord] = []
     # for e in errors:
@@ -212,7 +214,7 @@ def main():
     #     )
     #     records.append(record)
     
-    inserted = save_error_records(errors, project_id="1")
+    inserted = save_error_records(errors, project_id="1", config_id=config_id)
     print(f"Inserted {inserted} error records.")
 
     # print("Parsed error records:\n")
