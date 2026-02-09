@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import NavBar from "./NavBar";
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 
 
 
@@ -16,9 +16,8 @@ function Configurations() {
     useEffect(() => {
             const fetchData = async () => {
                 try{
-                    const configResponse = await fetch (`${API_BASE_URL}/get_config_data?project_id=${project_id}`)
+                    const configResponse = await fetch (`${API_BASE_URL}/get_config_data?project_id=${projectId}`)
                     const configData = await configResponse.json()
-                    setConfigurations(configData)
                     setConfigurations(configData)
                     setLoading(false)
 
@@ -27,16 +26,18 @@ function Configurations() {
                     setError(err.message)
                     setLoading(false)
             }
-             }
+            }
 
         fetchData()
-    }, [project_id])
+    }, [projectId])
 
     if (loading) return <div>Loading...</div>
     if (error) return <div>Error: {error}</div>
 
     
     return (
+        <>
+        <NavBar />
         <div>
             <h1>Configurations</h1>
             <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
@@ -58,7 +59,7 @@ function Configurations() {
                         <td>{config.fixes}</td>
                         <td>{config.duration}</td>
                         <td>                               
-                            <button onClick={() => navigate(`/errors${config.configid}`)}>Errors</button>
+                            <button onClick={() => navigate(`/errors/${config.configid}`)}>Errors</button>
                         </td>
                     </tr>
                     ))}
@@ -71,6 +72,7 @@ function Configurations() {
 
 
         </div>
+        </>
     )
 
 }
