@@ -16,7 +16,7 @@ function App() {
         <Route path="/" element={<Home />} />
         {/* <Route path="/project_page" element={<ProjectPage />} /> */}
         <Route path="/errors" element={<Errors />} />
-        <Route path="/configurations" element={<Configurations />} />
+        <Route path="/configurations/:projectId" element={<Configurations />} />
         
       </Routes>
     </BrowserRouter>
