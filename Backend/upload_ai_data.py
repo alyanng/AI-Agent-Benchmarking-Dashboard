@@ -5,7 +5,7 @@ from store_error_info import save_error_records
 
 
 from results_and_configuration_info import insert_configurations
-
+from results_and_configuration_info import insert_fixes
 from store_error_info import save_error_records
 
 
