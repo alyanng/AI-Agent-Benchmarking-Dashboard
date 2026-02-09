@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import NavBar from "./NavBar";
 
 
-async function configurationPage(project_id) {
+function Configurations(project_id) {
     const [configurations, setConfigurations] = useState([])
 
 
@@ -25,7 +25,7 @@ async function configurationPage(project_id) {
     return (
         <div>
             <h1>Configurations</h1>
-            <table>
+            <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
                 <thead>
                     <tr>
                         <th>Configuration ID</th>
@@ -37,7 +37,16 @@ async function configurationPage(project_id) {
                 </thead>
 
                 <tbody>
-    
+                    {configurations.map(config => (
+                    <tr key={config.configid}>
+                        <td>{config.prompt}</td>
+                        <td>{config.fixes}</td>
+                        <td>{config.duraation}</td>
+                        <td>                               
+                            View Errors
+                        </td>
+                    </tr>
+                    ))}
 
                 </tbody>
 
@@ -50,4 +59,5 @@ async function configurationPage(project_id) {
     )
 
 }
+export default Configurations
 
