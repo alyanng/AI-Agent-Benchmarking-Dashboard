@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import NavBar from './NavBar';
 
 export default function Errors() {
   const [errors, setErrors] = useState([]);
@@ -29,29 +30,34 @@ export default function Errors() {
   if (errMsg) return <div style={{ padding: 16, color: "red" }}>Error: {errMsg}</div>;
 
   return (
-    <div style={{ padding: 16 }}>
-      <h2>Error Records</h2>
+    <>
+      <NavBar />
+      <div style={{ padding: 16 }}>
+        <h2>Error Records</h2>
 
-      <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
-        <thead>
-          <tr>
-            <th>Error ID</th>
-            <th>Error Type</th>
-            <th>Was Fixed</th>
-            <th>Project ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {errors.map((e) => (
-            <tr key={e.error_id}>
-              <td>{e.error_id}</td>
-              <td>{e.error_type}</td>
-              <td>{String(e.was_fixed)}</td>
-              <td>{e.project_id}</td>
+        <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
+          <thead>
+            <tr>
+              <th>Error ID</th>
+              <th>Error Type</th>
+              <th>Was Fixed</th>
+              <th>Project ID</th>
+              <th>Configuration ID</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {errors.map((e) => (
+              <tr key={e.error_id}>
+                <td>{e.error_id}</td>
+                <td>{e.error_type}</td>
+                <td>{String(e.was_fixed)}</td>
+                <td>{e.project_id}</td>
+                <td>{e.configuration_id}</td>          
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

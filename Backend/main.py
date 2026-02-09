@@ -9,17 +9,16 @@ import get_ai_data
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-
+# Create app ONCE
 app = FastAPI(title="Backend API")
 
+# Define CORS allowed origins
 origins = [
     "http://localhost:5173",
-     "http://localhost:5174",
+    "http://localhost:5174",
 ]
 
-
-app = FastAPI()
-
+# Add CORS middleware IMMEDIATELY after app creation
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,        # allowed frontend origins
@@ -28,7 +27,7 @@ app.add_middleware(
     allow_headers=["*"],          # allow all headers
 )
 
-
+# Include routers
 app.include_router(upload_ai_data.router)
 app.include_router(get_ai_data.router)
 
@@ -39,7 +38,7 @@ def list_errors():
     conn = get_conn()
     cur = conn.cursor()
     cur.execute("""
-        SELECT error_id, error_type, was_fixed, project_id
+        SELECT error_id, error_type, was_fixed, project_id, configuration_id
         FROM error_records
         ORDER BY error_id
     """)
@@ -53,6 +52,7 @@ def list_errors():
             "error_type": r[1],
             "was_fixed": r[2],
             "project_id": r[3],
+            "configuration_id": r[4]
         }
         for r in rows
     ]
