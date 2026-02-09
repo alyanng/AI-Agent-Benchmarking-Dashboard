@@ -54,7 +54,7 @@ export default function Projects() {
                 </a>
               </td>
               <td>
-                <button onClick={() => navigate(`/project/${p.project_id}`)}>More Details</button>
+                <button onClick={() => navigate(`/configurations/${p.project_id}`)}>More Details</button>
               </td>
             </tr>
           ))}

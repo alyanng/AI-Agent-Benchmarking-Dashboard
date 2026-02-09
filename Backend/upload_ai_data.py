@@ -8,6 +8,7 @@ from store_error_info import save_error_records
 from results_and_configuration_info import insert_configurations
 from results_and_configuration_info import insert_fixes
 from store_error_info import save_error_records
+from projects_info import insert_project
 
 
 
@@ -48,7 +49,7 @@ async def upload_ai_json(file:UploadFile=File(...), prompt: Optional[str] = Form
     config_id = insert_configurations(
         system_prompt=parsed_data.get("prompt"),
         model = "",
-        project_id = 1 
+        project_id = project_id
     )
 
     #Calls function from store_results_info file to insert results into db
