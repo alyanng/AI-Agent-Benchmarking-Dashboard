@@ -1,0 +1,10 @@
+from fastapi import APIRouter
+from results_and_configuration_info import get_config_results
+
+router = APIRouter()
+
+@router.get("/get_cofig_data")
+async def get_configurations(project_id: int):
+    configurations = get_config_results(project_id)
+    return configurations
+
