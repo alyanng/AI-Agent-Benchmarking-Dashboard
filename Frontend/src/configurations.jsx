@@ -1,25 +1,39 @@
 import { useEffect, useState } from "react";
 import NavBar from "./NavBar";
+import { useNavigate } from "react-router-dom"
 
 
-function Configurations(project_id) {
+
+function Configurations() {
+    const { projectId } = useParams()
     const [configurations, setConfigurations] = useState([])
-
+    const navigate = useNavigate()
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
     
     useEffect(() => {
-        const fetchData = async () => {
-            const configResponse = await fetch (`${API_BASE_URL}/get_cofig_data?project_id=${project_id}`)
-            const configData = await configResponse.json()
-            setConfigurations(configData)
+            const fetchData = async () => {
+                try{
+                    const configResponse = await fetch (`${API_BASE_URL}/get_config_data?project_id=${project_id}`)
+                    const configData = await configResponse.json()
+                    setConfigurations(configData)
+                    setConfigurations(configData)
+                    setLoading(false)
 
-
-        }
+                } catch(err) {
+                    console.error('Error fetching configurations:', err)
+                    setError(err.message)
+                    setLoading(false)
+            }
+             }
 
         fetchData()
     }, [project_id])
 
+    if (loading) return <div>Loading...</div>
+    if (error) return <div>Error: {error}</div>
 
     
     return (
@@ -39,11 +53,12 @@ function Configurations(project_id) {
                 <tbody>
                     {configurations.map(config => (
                     <tr key={config.configid}>
+                        <td>{config.configid}</td>
                         <td>{config.prompt}</td>
                         <td>{config.fixes}</td>
-                        <td>{config.duraation}</td>
+                        <td>{config.duration}</td>
                         <td>                               
-                            View Errors
+                            <button onClick={() => navigate(`/errors${config.configid}`)}>Errors</button>
                         </td>
                     </tr>
                     ))}
