@@ -17,7 +17,7 @@ def connect_to_db():
 
 #Inserts a configuration into the database
 def insert_configurations(system_prompt, model, project_id):
-    conn = connect_to_db
+    conn = connect_to_db()
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO configuration (system_prompt, model, project_id) VALUES (%s, %s, %s) RETURNING configuration_ID;",
@@ -31,7 +31,7 @@ def insert_configurations(system_prompt, model, project_id):
 
 #Inserts a result into the database
 def insert_fixes(number_of_fixes, duration, tokens, project_id, config_id):
-    conn = connect_to_db
+    conn = connect_to_db()
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO results (number_of_fixes, duration, tokens, project_id, configuration_id) VALUES (%s, %s, %s, %s, %s) RETURNING results_id;",
