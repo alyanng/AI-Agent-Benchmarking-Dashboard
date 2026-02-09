@@ -197,12 +197,20 @@ def main():
     )
     args = parser.parse_args()
 
+    parser.add_argument(
+    "--config-id",
+    type=int,
+    default=None,
+    help="configuration_id to link error_records to (optional)"
+)
+
+
     json_path = Path(args.json).expanduser().resolve()
     input_json = load_input_json(json_path)
 
     # project_name = input_json["project_name"]
     errors = input_json["errors"]
-    config_id = None  # This can be set if you want to link errors to a specific configuration
+    config_id = args.config_id  
 
     # records: list[ErrorRecord] = []
     # for e in errors:

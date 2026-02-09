@@ -55,7 +55,7 @@ async def upload_ai_json(file:UploadFile=File(...), prompt: Optional[str] = Form
     )
 
     errors = parsed_data.get("errors", [])
-    inserted = save_error_records(errors, project_id="1")
+    inserted = save_error_records(errors, project_id="1", config_id=config_id)
 
 
 
