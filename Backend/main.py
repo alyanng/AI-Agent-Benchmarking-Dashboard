@@ -18,7 +18,7 @@ origins = [
 ]
 
 
-app = FastAPI()
+# app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
