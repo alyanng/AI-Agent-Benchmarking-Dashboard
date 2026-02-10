@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import NavBar from "./NavBar";
 import { useNavigate, useParams } from "react-router-dom"
-
+import './configuration.css'
 
 
 function Configurations() {
@@ -55,7 +55,7 @@ function Configurations() {
                     {configurations.map(config => (
                     <tr key={config.configid}>
                         <td>{config.configid}</td>
-                        <td>{config.prompt}</td>
+                        <td className="formatted-text">{config.prompt}</td>
                         <td>{config.fixes}</td>
                         <td>{config.duration}</td>
                         <td>                               
