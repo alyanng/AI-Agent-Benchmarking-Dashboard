@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import NavBar from "./NavBar";
 import { useNavigate, useParams } from "react-router-dom"
-<<<<<<< HEAD
+
 import './configuration.css'
 
-=======
 import './Home.css'
->>>>>>> 3d2939930a95690c97b2b698c0ea109d9091b27d
 
 function Configurations() {
     const { projectId } = useParams()
