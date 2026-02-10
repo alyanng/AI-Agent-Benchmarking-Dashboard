@@ -8,6 +8,7 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
   useEffect(() => {
     async function loadProjects() {
@@ -15,12 +16,28 @@ export default function Projects() {
         setLoading(true);
         setErrMsg("");
 
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/projects`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const url = `${API_BASE_URL}/projects`;
+        console.log("[Projects] Fetching from URL:", url);
+        
+        const res = await fetch(url);
+        console.log("[Projects] Response status:", res.status, "OK:", res.ok);
+        
+        if (!res.ok) {
+          let errorBody = "";
+          try {
+            errorBody = await res.text();
+            console.log("[Projects] Error response body:", errorBody);
+          } catch (e) {
+            console.log("[Projects] Could not read error body:", e.message);
+          }
+          throw new Error(`HTTP ${res.status}: ${errorBody || "Server error"}`);
+        }
 
         const data = await res.json();
+        console.log("[Projects] Fetched projects successfully:", data.length, "records");
         setProjects(data);
       } catch (e) {
+        console.error("[Projects] Fetch failed:", e);
         setErrMsg(e?.message || "Failed to load projects");
       } finally {
         setLoading(false);
@@ -31,7 +48,24 @@ export default function Projects() {
   }, []);
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
-  if (errMsg) return <div style={{ padding: 16, color: "red" }}>Error: {errMsg}</div>;
+  if (errMsg) return (
+    <div style={{ padding: 16, color: "red" }}>
+      <h3>⚠️ Error Loading Projects</h3>
+      <p><strong>{errMsg}</strong></p>
+      <p style={{ fontSize: 12, color: "#666" }}>
+        API Base URL: <code>{API_BASE_URL}</code><br/>
+        Check browser console (F12) for more details. Ensure backend is running on {API_BASE_URL}
+      </p>
+    </div>
+  );
+
+  if (projects.length === 0) return (
+    <div style={{ padding: 16 }}>
+      <NavBar />
+      <h2>My Tested Projects</h2>
+      <p style={{ color: "#666" }}>No projects found.</p>
+    </div>
+  );
 
   return (
     <>
