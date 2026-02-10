@@ -14,7 +14,8 @@ function Home() {
       <div className="review">
       <h3>Review my record</h3>
       <button id="review_button" onClick={() => navigate("/projects")}>Review</button>
-      <button id="error_button" onClick={() => navigate("/errors")}>Error Log</button></div>
+      {/* <button id="error_button" onClick={() => navigate("/errors")}>Error Log</button> */}
+      </div>
       
       <FileUploadwithtext/>
     </div>
