@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from './NavBar';
+import './Home.css'
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -57,7 +58,7 @@ export default function Projects() {
                 </a>
               </td>
               <td>
-                <button onClick={() => navigate(`/configurations/${p.project_id}`)}>More Details</button>
+                <button className="config-button" onClick={() => navigate(`/configurations/${p.project_id}`)}>More Details</button>
               </td>
             </tr>
           ))}
