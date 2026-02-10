@@ -2,3 +2,24 @@
   white-space: pre-wrap;
   word-wrap: break-word;
 }
+
+.expandable-toggle {
+  background: none;
+  border: none;
+  color: #0066cc;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+  margin-left: 4px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.expandable-toggle:hover {
+  color: #0052a3;
+  text-decoration: underline;
+}
+
+.expandable-toggle:active {
+  color: #003d7a;
+}

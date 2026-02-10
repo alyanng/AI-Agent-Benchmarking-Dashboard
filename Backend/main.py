@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from pathlib import Path
 from database import get_conn
 import get_ai_data
-import project_routes
 
 # Load environment variables
 env_path = Path(__file__).resolve().parent / ".env"
@@ -34,14 +33,9 @@ app.add_middleware(
 # Include routers
 app.include_router(upload_ai_data.router)
 app.include_router(get_ai_data.router)
-app.include_router(project_router)      # New projects endpoint
+app.include_router(project_router)      # Projects endpoint
 
 # Endpoint to list error records, optionally filtered by configuration_id
-
-
-app.include_router(project_routes.router)      # New projects endpoint
-
-# Temporary endpoint to list all error records
 @app.get("/api/errors")
 def list_errors(configuration_id: int = None):
     try:

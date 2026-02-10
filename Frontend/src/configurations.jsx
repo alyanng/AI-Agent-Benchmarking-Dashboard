@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import NavBar from "./NavBar";
 import { useNavigate, useParams } from "react-router-dom"
+import ExpandableText from "./ExpandableText";
 
 import './configuration.css'
 
@@ -57,7 +58,9 @@ function Configurations() {
                     {configurations.map(config => (
                     <tr key={config.configid}>
                         <td>{config.configid}</td>
-                        <td className="formatted-text">{config.prompt}</td>
+                        <td className="formatted-text">
+                            <ExpandableText text={config.prompt} wordLimit={50} />
+                        </td>
                         <td>{config.fixes}</td>
                         <td>{config.duration}</td>
                         <td>                               
