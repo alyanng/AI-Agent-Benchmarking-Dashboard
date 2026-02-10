@@ -1,4 +1,4 @@
-from database import get_conn
+from database import get_conn 
 
 def insert_project(project_name, github_url, number_of_errors):
     """
