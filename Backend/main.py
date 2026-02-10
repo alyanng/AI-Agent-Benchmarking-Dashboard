@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 import upload_ai_data
 from project_routes import router as project_router  # New projects router
 from dotenv import load_dotenv
@@ -32,44 +33,44 @@ app.add_middleware(
 # Include routers
 app.include_router(upload_ai_data.router)
 app.include_router(get_ai_data.router)
+app.include_router(project_router)      # New projects endpoint
 
 # Endpoint to list error records, optionally filtered by configuration_id
-
-
-app.include_router(project_router.router)      # New projects endpoint
-
-# Temporary endpoint to list all error records
 @app.get("/api/errors")
 def list_errors(configuration_id: int = None):
-    conn = get_conn()
-    cur = conn.cursor()
-    
-    if configuration_id is not None:
-        cur.execute("""
-            SELECT error_id, error_type, was_fixed, project_id, configuration_id
-            FROM error_records
-            WHERE configuration_id = %s
-            ORDER BY error_id
-        """, (configuration_id,))
-    else:
-        cur.execute("""
-            SELECT error_id, error_type, was_fixed, project_id, configuration_id
-            FROM error_records
-            ORDER BY error_id
-        """)
-    
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        
+        if configuration_id is not None:
+            cur.execute("""
+                SELECT error_id, error_type, was_fixed, project_id, configuration_id
+                FROM error_records
+                WHERE configuration_id = %s
+                ORDER BY error_id
+            """, (configuration_id,))
+        else:
+            cur.execute("""
+                SELECT error_id, error_type, was_fixed, project_id, configuration_id
+                FROM error_records
+                ORDER BY error_id
+            """)
+        
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
 
-    return [
-        {
-            "error_id": r[0],
-            "error_type": r[1],
-            "was_fixed": r[2],
-            "project_id": r[3],
-            "configuration_id": r[4]
-        }
-        for r in rows
-    ]
+        return [
+            {
+                "error_id": r[0],
+                "error_type": r[1],
+                "was_fixed": r[2],
+                "project_id": r[3],
+                "configuration_id": r[4]
+            }
+            for r in rows
+        ]
+    except Exception as e:
+        print(f"[/api/errors] Error: {str(e)}")
+        raise
 

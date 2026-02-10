@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File
 import json
-from insert_project import insert_project  
+from projects_info import insert_project  
 
 router = APIRouter()
 

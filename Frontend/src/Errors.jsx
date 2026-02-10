@@ -7,7 +7,7 @@ export default function Errors() {
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState("");
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
   useEffect(() => {
     async function load() {
@@ -20,13 +20,27 @@ export default function Errors() {
           url += `?configuration_id=${configurationId}`;
         }
 
+        console.log("[Errors] Fetching from URL:", url);
         const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        console.log("[Errors] Response status:", res.status, "OK:", res.ok);
+        
+        if (!res.ok) {
+          let errorBody = "";
+          try {
+            errorBody = await res.text();
+            console.log("[Errors] Error response body:", errorBody);
+          } catch (e) {
+            console.log("[Errors] Could not read error body:", e.message);
+          }
+          throw new Error(`HTTP ${res.status}: ${errorBody || "Server error"}`);
+        }
 
         const data = await res.json();
+        console.log("[Errors] Fetched errors successfully:", data.length, "records");
         setErrors(data);
       } catch (e) {
-        setErrMsg(e?.message ?? "Failed to load");
+        console.error("[Errors] Fetch failed:", e);
+        setErrMsg(e?.message ?? "Failed to load errors");
       } finally {
         setLoading(false);
       }
@@ -35,7 +49,24 @@ export default function Errors() {
   }, [configurationId, API_BASE_URL]);
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
-  if (errMsg) return <div style={{ padding: 16, color: "red" }}>Error: {errMsg}</div>;
+  if (errMsg) return (
+    <div style={{ padding: 16, color: "red" }}>
+      <h3>⚠️ Error Loading Records</h3>
+      <p><strong>{errMsg}</strong></p>
+      <p style={{ fontSize: 12, color: "#666" }}>
+        API Base URL: <code>{API_BASE_URL}</code><br/>
+        Check browser console (F12) for more details. Ensure backend is running on {API_BASE_URL}
+      </p>
+    </div>
+  );
+
+  if (errors.length === 0) return (
+    <div style={{ padding: 16 }}>
+      <NavBar />
+      <h2>Error Records</h2>
+      <p style={{ color: "#666" }}>No errors found.</p>
+    </div>
+  );
 
   return (
     <>
