@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import NavBar from "./NavBar";
 import { useNavigate, useParams } from "react-router-dom"
-
-
+import './Home.css'
 
 function Configurations() {
     const { projectId } = useParams()
@@ -59,7 +58,7 @@ function Configurations() {
                         <td>{config.fixes}</td>
                         <td>{config.duration}</td>
                         <td>                               
-                            <button onClick={() => navigate(`/errors/${config.configid}`)}>Errors</button>
+                            <button className="error-button" onClick={() => navigate(`/errors/${config.configid}`)}>Errors</button>
                         </td>
                     </tr>
                     ))}
