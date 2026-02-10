@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import NavBar from './NavBar';
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -32,6 +33,8 @@ export default function Projects() {
   if (errMsg) return <div style={{ padding: 16, color: "red" }}>Error: {errMsg}</div>;
 
   return (
+    <>
+    <NavBar />
     <div style={{ padding: 16 }}>
       <h2>My Tested Projects</h2>
       <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
@@ -61,5 +64,6 @@ export default function Projects() {
         </tbody>
       </table>
     </div>
+    </>
   );
 }

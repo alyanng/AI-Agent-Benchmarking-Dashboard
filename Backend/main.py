@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from database import get_conn
 import get_ai_data
+import project_routes
 
 # Load environment variables
 env_path = Path(__file__).resolve().parent / ".env"
@@ -36,7 +37,7 @@ app.include_router(get_ai_data.router)
 # Endpoint to list error records, optionally filtered by configuration_id
 
 
-app.include_router(project_router.router)      # New projects endpoint
+app.include_router(project_routes.router)      # New projects endpoint
 
 # Temporary endpoint to list all error records
 @app.get("/api/errors")
