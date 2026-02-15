@@ -18,7 +18,7 @@ function App() {
         <Route path="/configurations/:projectId" element={<Configurations />} />
 
         <Route path="/projects" element={<Projects />} /> {/* Projects list page */}
-        <Route path="/stability" element={<StabilityGraph/>} />
+        <Route path="/stability" element={<StabilityGraph />} />
 
       </Routes>
     </BrowserRouter>
