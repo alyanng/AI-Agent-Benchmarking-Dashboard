@@ -6,6 +6,7 @@ import ExpandableText from "./ExpandableText";
 import './configuration.css'
 
 import './Home.css'
+import Accuracy_graph from "./Accuracy_graph";
 
 function Configurations() {
     const { projectId } = useParams()
@@ -15,6 +16,7 @@ function Configurations() {
     const [error, setError] = useState(null)
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+   
     
     useEffect(() => {
             const fetchData = async () => {
@@ -46,6 +48,7 @@ function Configurations() {
             <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
                 <thead>
                     <tr>
+                        <th>Results ID</th>
                         <th>Configuration ID</th>
                         <th>System prompt</th>
                         <th>Number of fixes</th>
@@ -56,7 +59,8 @@ function Configurations() {
 
                 <tbody>
                     {configurations.map(config => (
-                    <tr key={config.configid}>
+                    <tr key={config.results_id}>
+                        <td>{config.results_id}</td>
                         <td>{config.configid}</td>
                         <td className="formatted-text">
                             <ExpandableText text={config.prompt} wordLimit={50} />
@@ -74,8 +78,7 @@ function Configurations() {
 
             </table>
 
-
-
+<Accuracy_graph configdata={configurations}/>
         </div>
         </>
     )
