@@ -86,7 +86,7 @@ const CompareModelsBarChart = ({ projectId, limit = 50 }) => {
       agg.total_tokens += Number.isFinite(tokens) ? tokens : 0;
     }
 
-    // 输出给 Recharts：speed = fixes per minute
+   
     return Array.from(byModel.values()).map((m) => ({
       model: m.model,
       total_fixes: m.total_fixes,

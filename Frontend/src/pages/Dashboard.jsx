@@ -41,6 +41,9 @@ const Dashboard = () => {
              */}
             <ChartArea />
             <ChartArea2 />
+            
+          </div>
+          <div className="chart-wrapper" style={{ width: '100%', height: 300 }}>
             <ChartAreaCompareModels />
           </div>
         </div>
