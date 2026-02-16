@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from database import get_conn
 import get_ai_data
+from mcp import mcp_router
 
 # Load environment variables
 env_path = Path(__file__).resolve().parent / ".env"
@@ -44,6 +45,7 @@ app.add_middleware(
 app.include_router(upload_ai_data.router)
 app.include_router(get_ai_data.router)
 app.include_router(project_router)      # Projects endpoint
+app.include_router(mcp_router.router)
 
 # =============================================
 # Endpoint: Get detected errors from results table
