@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Errors from "./Errors";
 import Projects from "./Projects.jsx"; // Add your Projects page
 import Configurations from "./configurations.jsx";
+import Dashboard from './pages/Dashboard.jsx';
+import DetectedErrorsBarChart from './components/DetectedErrorsBarChart.jsx';
 
 function App() {
   return (
@@ -17,6 +19,7 @@ function App() {
         <Route path="/configurations/:projectId" element={<Configurations />} />
 
         <Route path="/projects" element={<Projects />} /> {/* Projects list page */}
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );
