@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 
 
+
 /**
  * Dashboard Page
  * 
@@ -19,6 +20,75 @@ import {
  * This is the main page for analyzing test results.
  */
 const Dashboard = () => {
+  const [detectedData, setDetectedData] = useState([]);
+  const [highData, setHighData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchBoth() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [res1, res2] = await Promise.all([
+          fetch('http://localhost:8000/api/results/detected_errors?limit=50'),
+          fetch('http://localhost:8000/api/results/high_quality_errors?limit=50'),
+        ]);
+
+        if (!res1.ok) throw new Error(`Detected errors HTTP ${res1.status}`);
+        if (!res2.ok) throw new Error(`High quality errors HTTP ${res2.status}`);
+
+        const [json1, json2] = await Promise.all([res1.json(), res2.json()]);
+
+        const d1 = Array.isArray(json1)
+          ? json1.map((r) => ({
+              x: r && typeof r.x !== 'undefined' ? r.x : null,
+              detected_errors:
+                r && r.detected_errors != null && !Number.isNaN(Number(r.detected_errors))
+                  ? Number(r.detected_errors)
+                  : 0,
+            }))
+          : [];
+
+        const d2 = Array.isArray(json2)
+          ? json2.map((r) => ({
+              x: r && typeof r.x !== 'undefined' ? r.x : null,
+              high_quality_errors:
+                r && r.high_quality_errors != null && !Number.isNaN(Number(r.high_quality_errors))
+                  ? Number(r.high_quality_errors)
+                  : 0,
+            }))
+          : [];
+
+        if (mounted) {
+          setDetectedData(d1);
+          setHighData(d2);
+        }
+      } catch (err) {
+        if (mounted) setError(err.message || String(err));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchBoth();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  
+  const sharedMaxYRaw = Math.max(
+    0,
+    ...detectedData.map((d) => d.detected_errors ?? 0),
+    ...highData.map((d) => d.high_quality_errors ?? 0)
+  );
+
+  
+  const sharedMaxY = Math.ceil(sharedMaxYRaw / 4) * 4 || 0;
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -28,21 +98,12 @@ const Dashboard = () => {
 
       <div className="dashboard-content">
         <div className="chart-section">
-          <h2>Detected Errors</h2>
-          <p className="chart-description">
-            This chart shows the number of detected errors for each test result.
-            Each bar represents one result from the results table.
-          </p>
           <div className="chart-wrapper" style={{ width: '100%', height: 300 }}>
-            {/**
-             * Inline chart implementation per requirements.
-             * - Fetches data from backend
-             * - Renders Recharts BarChart (one bar per row)
-             */}
-            <ChartArea />
-            <ChartArea2 />
-            
+            <ChartArea data={detectedData} loading={loading} error={error} maxY={sharedMaxY} />
+          
+            <ChartArea2 data={highData} loading={loading} error={error} maxY={sharedMaxY} />
           </div>
+
           <div className="chart-wrapper" style={{ width: '100%', height: 300 }}>
             <ChartAreaCompareModels />
           </div>
@@ -53,70 +114,15 @@ const Dashboard = () => {
 };
 
 // ChartArea component kept inside this file per requirement (no separate file)
-function ChartArea() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchData() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch('http://localhost:8000/api/results/detected_errors?limit=50');
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-
-        // Ensure array and sanitize values
-        const sanitized = Array.isArray(json)
-          ? json.map((r) => ({
-              x: r && typeof r.x !== 'undefined' ? r.x : null,
-              detected_errors:
-                r && r.detected_errors != null && !Number.isNaN(Number(r.detected_errors))
-                  ? Number(r.detected_errors)
-                  : 0,
-            }))
-          : [];
-
-        if (mounted) setData(sanitized);
-      } catch (err) {
-        if (mounted) setError(err.message || String(err));
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    fetchData();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
+function ChartArea({ data, loading, error, maxY }) {
   if (loading) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>
-        Loading chart data...
-      </div>
-    );
+    return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>Loading chart data...</div>;
   }
-
   if (error) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', color: 'red', paddingTop: 20 }}>
-        Error loading data: {error}
-      </div>
-    );
+    return <div style={{ width: '100%', textAlign: 'center', color: 'red', paddingTop: 20 }}>Error loading data: {error}</div>;
   }
-
   if (!data || data.length === 0) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>
-        No data available
-      </div>
-    );
+    return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>No data available</div>;
   }
 
   return (
@@ -124,7 +130,7 @@ function ChartArea() {
       <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="x" label={{ value: 'Result', position: 'insideBottomRight', offset: -10 }} />
-        <YAxis label={{ value: 'Detected Errors', angle: -90, position: 'insideLeft' }} />
+        <YAxis domain={[0, maxY]} label={{ value: 'Detected Errors', angle: -90, position: 'insideLeft' }} />
         <Tooltip formatter={(value) => `${value}`} labelFormatter={(label) => `Result #${label}`} />
         <Bar dataKey="detected_errors" fill="#3b82f6" />
       </BarChart>
@@ -132,71 +138,15 @@ function ChartArea() {
   );
 }
 
-// ChartArea component kept inside this file per requirement (no separate file)
-function ChartArea2() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchData() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch('http://localhost:8000/api/results/high_quality_errors?limit=50');
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-
-        // Ensure array and sanitize values
-        const sanitized = Array.isArray(json)
-          ? json.map((r) => ({
-              x: r && typeof r.x !== 'undefined' ? r.x : null,
-              high_quality_errors:
-                r && r.high_quality_errors != null && !Number.isNaN(Number(r.high_quality_errors))
-                  ? Number(r.high_quality_errors)
-                  : 0,
-            }))
-          : [];
-
-        if (mounted) setData(sanitized);
-      } catch (err) {
-        if (mounted) setError(err.message || String(err));
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    fetchData();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
+function ChartArea2({ data, loading, error, maxY }) {
   if (loading) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>
-        Loading chart data...
-      </div>
-    );
+    return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>Loading chart data...</div>;
   }
-
   if (error) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', color: 'red', paddingTop: 20 }}>
-        Error loading data: {error}
-      </div>
-    );
+    return <div style={{ width: '100%', textAlign: 'center', color: 'red', paddingTop: 20 }}>Error loading data: {error}</div>;
   }
-
   if (!data || data.length === 0) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>
-        No data available
-      </div>
-    );
+    return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>No data available</div>;
   }
 
   return (
@@ -204,14 +154,13 @@ function ChartArea2() {
       <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="x" label={{ value: 'Result', position: 'insideBottomRight', offset: -10 }} />
-        <YAxis label={{ value: 'High Quality Errors', angle: -90, position: 'insideLeft' }} />
+        <YAxis domain={[0, maxY]} label={{ value: 'High Quality Errors', angle: -90, position: 'insideLeft' }} />
         <Tooltip formatter={(value) => `${value}`} labelFormatter={(label) => `Result #${label}`} />
         <Bar dataKey="high_quality_errors" fill="#3b82f6" />
       </BarChart>
     </ResponsiveContainer>
   );
 }
-
 
 // ChartAreaCompareModels kept inside this file per requirement (no separate file)
 function ChartAreaCompareModels() {
