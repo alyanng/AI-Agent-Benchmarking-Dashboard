@@ -245,6 +245,9 @@ def list_errors(configuration_id: int = None):
         print(f"[/api/errors] Error: {str(e)}")
         raise
 
+@app.get("/get_config_data")
+def get_config_data_test(project_id: int):
+    return {"message": f"Received project_id: {project_id}"}
 # -----------------------------------
 # Endpoint: get project-level performance data
 # -----------------------------------
