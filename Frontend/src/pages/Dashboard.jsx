@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
+import { useParams, useNavigate } from 'react-router-dom'; 
+import Accuracy_graph from "../Accuracy_graph";
 import {
   ResponsiveContainer,
   BarChart,
@@ -108,6 +110,7 @@ const Dashboard = () => {
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
             <ChartAreaCompareModels />
           </div>
+<<<<<<< HEAD
 
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
             <Combined/>
@@ -116,6 +119,12 @@ const Dashboard = () => {
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
             <Stability/>
           </div>
+=======
+         
+    <div className="chart-wrapper" style={{ width: '100%', height: 400 }}>
+      <Accuracy />
+    </div>
+>>>>>>> master
         </div>
       </div>
     </div>
@@ -323,6 +332,7 @@ function ChartAreaCompareModels() {
   );
 }
 
+<<<<<<< HEAD
 function Combined() {
   return <CombinedGraph />;
 }
@@ -330,5 +340,45 @@ function Combined() {
 function Stability() {
   return <StabilityGraph/>;
 }
+=======
+function Accuracy(){
+  
+//  const { projectId } = useParams()
+const projectId = 2;
+    const [configurations, setConfigurations] = useState([])
+    const navigate = useNavigate()
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+   
+    
+    useEffect(() => {
+            const fetchData = async () => {
+                try{
+                    const configResponse = await fetch (`${API_BASE_URL}/get_config_data?project_id=${projectId}`)
+                    const configData = await configResponse.json()
+                    setConfigurations(configData)
+                    setLoading(false)
+
+                } catch(err) {
+                    console.error('Error fetching configurations:', err)
+                    setError(err.message)
+                    setLoading(false)
+            }
+            }
+
+        fetchData()
+    }, [projectId])
+
+    return ( <Accuracy_graph configdata={configurations}/> );
+ 
+}
+
+
+
+
+
+>>>>>>> master
 
 export default Dashboard;
