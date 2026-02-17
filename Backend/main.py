@@ -5,6 +5,7 @@ from pathlib import Path
 
 # Import your routers
 import upload_ai_data
+import get_ai_data
 from project_routes import router as project_router  # Projects router
 
 from database import get_conn
