@@ -129,6 +129,68 @@ def get_high_quality_errors(limit: int = 50):
     except Exception as e:
         print(f"[/api/results/high_quality_errors] Error: {str(e)}")
         return {"error": str(e)}
+    
+
+
+# =============================================
+# Endpoint: Compare ai models
+# =============================================
+@app.get("/api/results/compare_ai_models")
+def compare_ai_models(project_id: int, limit: int = 50):
+    """
+    Compare runs across AI models for one project.
+    Returns oldest -> newest.
+    """
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT
+                r.results_id,
+                c.model,
+                r.number_of_fixes,
+                r.duration,
+                r.tokens,
+                r.created_at
+            FROM results r
+            JOIN configuration c
+              ON r.project_id = c.project_id
+             AND r.configuration_id = c.configuration_id
+            WHERE r.project_id = %s
+            ORDER BY r.results_id DESC
+            LIMIT %s;
+            """,
+            (project_id, limit)
+        )
+
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        # oldest -> newest
+        rows.reverse()
+
+        result = []
+        for idx, (results_id, model, number_of_fixes, duration, tokens, created_at) in enumerate(rows):
+            result.append({
+                "x": idx + 1,
+                "results_id": safe_int(results_id),
+                "model": model,
+                "number_of_fixes": safe_int(number_of_fixes),
+                "duration": float(duration) if duration is not None else 0.0,
+                "tokens": safe_int(tokens),
+                "created_at": created_at.isoformat() if created_at else None,
+            })
+
+        return result
+
+    except Exception as e:
+        print(f"[/api/results/compare_ai_models] Error: {str(e)}")
+        return {"error": str(e)}
+
+
 
 
 # Endpoint to list error records, optionally filtered by configuration_id
