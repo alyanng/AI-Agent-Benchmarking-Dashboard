@@ -8,6 +8,9 @@ import DetectedErrorsBarChart from './components/DetectedErrorsBarChart.jsx';
 import CombinedGraph from "./combined.jsx";
 import Errors from "./Errors.jsx";
 import AgentPerformance from "./AgentPerformance.jsx";
+import AddSystemPrompt from "./addSystemPromptPages/add_system_prompt.jsx";
+import ProjectList from './addSystemPromptPages/projectlist.jsx'
+import SystemPromptList from "./addSystemPromptPages/systempromptlist.jsx";
 
 function App() {
   return (
@@ -24,7 +27,9 @@ function App() {
         <Route path="/stability" element={<StabilityGraph />} />
         <Route path="/combined" element={<CombinedGraph />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/agent-performance/:projectId" element={<AgentPerformance />} />
+        <Route path="/projectlist" element={<ProjectList />} />
+        <Route path="/systempromptlist/:projectId" element={<SystemPromptList/>} />
+        <Route path="/addsystemprompt/:projectId" element={<AddSystemPrompt />} />
       </Routes>
     </BrowserRouter>
   );

@@ -77,6 +77,15 @@ def get_config_results(project_id):
     conn.close()
     return configAndResults
 
+def insert_new_system_prompts(projectid: int, prompt):
+    conn = connect_to_db()
+    cur = conn.cursor()
+    cur.execute(
+    "INSERT INTO configuration (system_prompt) VALUES (%s) WHERE project_id = %s;",
+    (prompt, projectid)
+    )
+    cur.close()
+    conn.close()
     
     
 

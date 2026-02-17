@@ -37,7 +37,7 @@ export default function CombinedGraph() {
         <div>
             <h1 style={{ textAlign: "center"}}> Combined data across system prompts</h1>
             <ResponsiveContainer width={900} height={400}>
-                <BarChart data ={combine} margin={{ top: 10, left: 0, right: 0, bottom: 40 }}>
+                <BarChart data ={combine} margin={{ top: 10, left: 0, right: 20, bottom: 40 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="configid" >
                     <Label 
