@@ -110,7 +110,6 @@ const Dashboard = () => {
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
             <ChartAreaCompareModels />
           </div>
-<<<<<<< HEAD
 
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
             <Combined/>
@@ -119,12 +118,10 @@ const Dashboard = () => {
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
             <Stability/>
           </div>
-=======
          
     <div className="chart-wrapper" style={{ width: '100%', height: 400 }}>
       <Accuracy />
     </div>
->>>>>>> master
         </div>
       </div>
     </div>
@@ -332,7 +329,6 @@ function ChartAreaCompareModels() {
   );
 }
 
-<<<<<<< HEAD
 function Combined() {
   return <CombinedGraph />;
 }
@@ -340,7 +336,6 @@ function Combined() {
 function Stability() {
   return <StabilityGraph/>;
 }
-=======
 function Accuracy(){
   
 //  const { projectId } = useParams()
@@ -379,6 +374,5 @@ const projectId = 2;
 
 
 
->>>>>>> master
 
 export default Dashboard;
