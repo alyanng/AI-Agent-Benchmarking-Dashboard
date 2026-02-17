@@ -54,11 +54,11 @@ async def upload_ai_json(file:UploadFile=File(...), prompt: Optional[str] = Form
 
     #Calls function from store_results_info file to insert results into db
     insert_fixes(
-        number_of_fixes=parsed_data.get("fixes", 0),
-        duration=parsed_data.get("total_time_spent_minutes", 0),
-        tokens = 0,
-        project_id = 1, #Refactored to get specific project id of chosen project
-        config_id = config_id
+    number_of_fixes=parsed_data.get("fixes", 0),
+    duration=parsed_data.get("total_time_spent_minutes", 0),
+    tokens = 0,
+    project_id = project_id,
+    config_id = config_id
     )
 
     errors = parsed_data.get("errors", [])

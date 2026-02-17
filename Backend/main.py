@@ -1,18 +1,24 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-import upload_ai_data
-from project_routes import router as project_router  # New projects router
 from dotenv import load_dotenv
 from pathlib import Path
-from database import get_conn
-import get_ai_data
 
+# Import your routers
+import upload_ai_data
+import get_ai_data
+from project_routes import router as project_router  # Projects router
+
+from database import get_conn
+
+# -----------------------------------
 # Load environment variables
+# -----------------------------------
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# Create app ONCE
+# -----------------------------------
+# Create FastAPI app
+# -----------------------------------
 app = FastAPI(title="Backend API")
 
 # Helper function to safely convert to int
@@ -26,21 +32,25 @@ def safe_int(value):
         return 0
 
 # Define CORS allowed origins
+# -----------------------------------
+# CORS settings
+# -----------------------------------
 origins = [
     "http://localhost:5173",
     "http://localhost:5174",
 ]
 
-# Add CORS middleware IMMEDIATELY after app creation
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,        # allowed frontend origins
+    allow_origins=origins,       
     allow_credentials=True,
-    allow_methods=["*"],          # allow all HTTP methods
-    allow_headers=["*"],          # allow all headers
+    allow_methods=["*"],         
+    allow_headers=["*"],         
 )
 
+# -----------------------------------
 # Include routers
+# -----------------------------------
 app.include_router(upload_ai_data.router)
 app.include_router(get_ai_data.router)
 app.include_router(project_router)      # Projects endpoint
@@ -192,8 +202,11 @@ def compare_ai_models(project_id: int, limit: int = 50):
 
 
 
+app.include_router(project_router)
 
-# Endpoint to list error records, optionally filtered by configuration_id
+# -----------------------------------
+# Endpoint: list error records
+# -----------------------------------
 @app.get("/api/errors")
 def list_errors(configuration_id: int = None):
     try:
@@ -232,3 +245,42 @@ def list_errors(configuration_id: int = None):
         print(f"[/api/errors] Error: {str(e)}")
         raise
 
+# -----------------------------------
+# Endpoint: get project-level performance data
+# -----------------------------------
+@app.get("/get_performance_data")
+def get_performance_data(project_id: int):
+    """
+    Returns average performance metrics per prompt (configuration) for a project.
+    Each point in the chart = one prompt with averaged number of fixes and duration.
+    """
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT 
+                configuration_id,
+                AVG(number_of_fixes) AS avg_fixes,
+                AVG(duration) AS avg_duration
+            FROM results
+            WHERE project_id = %s
+            GROUP BY configuration_id
+            ORDER BY configuration_id
+        """, (project_id,))
+        
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        return [
+            {
+                "config_id": r[0],
+                "fixes": r[1],
+                "duration": r[2]
+            }
+            for r in rows
+        ]
+
+    except Exception as e:
+        print(f"[/get_performance_data] Error: {str(e)}")
+        return {"error": str(e)}
