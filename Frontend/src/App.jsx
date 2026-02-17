@@ -1,22 +1,20 @@
-import { useState } from 'react';
-import './App.css';
-import Home from './Home.jsx';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Errors from "./Errors";
-import Projects from "./Projects.jsx"; // Add your Projects page
+import Home from './Home.jsx';
+import Projects from "./Projects.jsx";
 import Configurations from "./configurations.jsx";
+import Errors from "./Errors.jsx";
+import AgentPerformance from "./AgentPerformance.jsx";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        {/* <Route path="/project_page" element={<ProjectPage />} /> */}
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/configurations/:projectId" element={<Configurations />} />
         <Route path="/errors" element={<Errors />} />
         <Route path="/errors/:configurationId" element={<Errors />} />
-        <Route path="/configurations/:projectId" element={<Configurations />} />
-
-        <Route path="/projects" element={<Projects />} /> {/* Projects list page */}
+        <Route path="/agent-performance/:projectId" element={<AgentPerformance />} />
       </Routes>
     </BrowserRouter>
   );
