@@ -8,6 +8,7 @@ import Configurations from "./configurations.jsx";
 import StabilityGraph from "./stability.jsx";
 import Dashboard from './pages/Dashboard.jsx';
 import DetectedErrorsBarChart from './components/DetectedErrorsBarChart.jsx';
+import CombinedGraph from "./combined.jsx";
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
 
         <Route path="/projects" element={<Projects />} /> {/* Projects list page */}
         <Route path="/stability" element={<StabilityGraph />} />
-
+        <Route path="/combined" element={<CombinedGraph />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>

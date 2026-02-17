@@ -16,7 +16,7 @@ def connect_to_db():
     password=os.getenv("POSTGRES_PASSWORD")
     )
     return conn
-
+#Gets data necessary for showing stability graph from db
 def get_stability_results():
     conn = connect_to_db()
     cur = conn.cursor()
@@ -46,9 +46,9 @@ def get_stability_results():
     print(calculate_stability(data))
     return calculate_stability(data)
 
-
+#Calculates stability from data
 def calculate_stability(data):
-
+    #creates dictionary
     configs = {}
     for d in data:
         config = d.get("configid")
@@ -58,6 +58,7 @@ def calculate_stability(data):
             configs[config] = []
         configs[config].append(error)
 
+    #creates list
     std_devs = []
     for config, errors in configs.items():
         if len(errors) > 1:

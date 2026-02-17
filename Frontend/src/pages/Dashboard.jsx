@@ -40,6 +40,7 @@ const Dashboard = () => {
              */}
             <ChartArea />
             <ChartArea2 />
+            
           </div>
         </div>
       </div>
