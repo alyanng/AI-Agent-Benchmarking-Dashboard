@@ -23,7 +23,7 @@ function SystemPromptList() {
         setConfigurations(configData);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching configurations:', err);
+        console.error('Error fetching system prompts:', err);
         setError(err.message);
         setLoading(false);
       }

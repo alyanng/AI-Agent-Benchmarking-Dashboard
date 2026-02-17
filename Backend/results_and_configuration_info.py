@@ -81,11 +81,14 @@ def insert_new_system_prompts(projectid: int, prompt):
     conn = connect_to_db()
     cur = conn.cursor()
     cur.execute(
-    "INSERT INTO configuration (system_prompt) VALUES (%s) WHERE project_id = %s;",
+    "INSERT INTO configuration (system_prompt, project_id) VALUES (%s, %s) RETURNING configuration_ID;",
     (prompt, projectid)
     )
+    config_id = cur.fetchone()[0]
+    conn.commit()
     cur.close()
     conn.close()
+    return config_id
     
     
 

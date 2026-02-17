@@ -76,8 +76,9 @@ async def upload_ai_json(file:UploadFile=File(...), prompt: Optional[str] = Form
 
 @router.post("/upload_system_prompt")
 async def upload_system_prompt(projectid: int, prompt: Optional[str] = Form(None)):
-    insert_new_system_prompts(projectid, prompt)
+    config = insert_new_system_prompts(projectid, prompt)
     return {
-        "success": True
+        "success": True,
+        "config": config
     }
 
