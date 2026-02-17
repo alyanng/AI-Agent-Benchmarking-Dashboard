@@ -22,6 +22,7 @@ accuracy:config.avg_hq_errors/config.avg_detected_errors,
 }))
 
   return (
+    
 
     <LineChart
       style={{ width: '100%', maxWidth: '700px', height: '100%', maxHeight: '70vh', aspectRatio: 1.618 }}
@@ -47,3 +48,4 @@ accuracy:config.avg_hq_errors/config.avg_detected_errors,
 }
 
 export default Accuracy_graph
+
