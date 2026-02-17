@@ -31,7 +31,7 @@ def get_all_results_data():
         configuration_id,
         results_id
     FROM results
-    ORDER BY configuration_id DESC
+    ORDER BY configuration_id ASC
     """
     )
     rows = cur.fetchall()

@@ -34,17 +34,16 @@ export default function CombinedGraph() {
 
 
     return (
-        <>
-        <NavBar />
         <div>
-            <h1> Combined data across configuration ID </h1>
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data ={combine} margin={{ left: 60, bottom: 0 }}>
+            <h1 style={{ textAlign: "center"}}> Combined data across system prompts</h1>
+            <ResponsiveContainer width={900} height={400}>
+                <BarChart data ={combine} margin={{ top: 10, left: 0, right: 0, bottom: 40 }}>
+                <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="configid" >
                     <Label 
                         value="Prompts" 
                         angle={0} 
-                        position="insideBottom"
+                        position="insideBottomRight"
                         offset={0}
                     />
                 </XAxis> 
@@ -56,15 +55,16 @@ export default function CombinedGraph() {
                         offset={-10}
                     />
                 </YAxis>
-          
-                <Bar dataKey="fixes" fill="#8884d8"/>
-                <Bar dataKey="errors" fill="#8cd884"/>
-                <Bar dataKey="high-quality" fill="#d8d184"/>
-                <Bar dataKey="time" fill="#d884cb"/>
-
+                <Tooltip formatter={(value) => `${value.toFixed(2)}`} labelFormatter={(label) => `Prompt ${label}`} />
+                <Bar dataKey="fixes" name = "Total fixes" fill="#3b82f6"/>
+                <Bar dataKey="errors" name ="Detected errors" fill="#22c55e" />
+                <Bar dataKey="high-quality" name = "High-quality errors" fill="#f59e0b"/>
+                <Bar dataKey="time" name = "Duration" fill="#00C49F"/>
+                <Legend/>
                 </BarChart>
             </ResponsiveContainer>
         </div>
-        </>
+
     )
 }
+

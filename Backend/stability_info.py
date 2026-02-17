@@ -28,7 +28,7 @@ def get_stability_results():
         detected_errors,
         configuration_id
     FROM results
-    ORDER BY configuration_id DESC
+    ORDER BY configuration_id ASC
     """
     )
     rows = cur.fetchall()

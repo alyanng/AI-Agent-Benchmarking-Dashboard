@@ -34,17 +34,15 @@ export default function StabilityGraph() {
 
 
     return (
-        <>
-        <NavBar />
         <div>
-            <h1> Stability across configuration ID </h1>
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data ={stability} margin={{ left: 60, bottom: 0 }}>
+            <ResponsiveContainer width={900} height={300}>
+                <BarChart data ={stability} margin={{ top: 10, left: 20, right: 20, bottom: 40 }}>
+                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="configid" >
                     <Label 
                         value="Prompts" 
                         angle={0} 
-                        position="insideBottom"
+                        position="insideBottomRight"
                         offset={0}
                     />
                 </XAxis> 
@@ -53,16 +51,14 @@ export default function StabilityGraph() {
                         value="Stability" 
                         angle={-90} 
                         position="insideLeft"
-                        offset={-10}
                     />
                 </YAxis>
           
-                <Bar dataKey="std_dev" fill="#8884d8"/>
+                <Bar dataKey="std_dev" fill="#3b82f6"/>
 
 
                 </BarChart>
             </ResponsiveContainer>
         </div>
-        </>
     )
 }
