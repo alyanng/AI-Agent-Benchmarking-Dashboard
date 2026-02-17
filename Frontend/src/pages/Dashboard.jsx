@@ -12,7 +12,6 @@ import {
 } from 'recharts';
 
 
-
 /**
  * Dashboard Page
  * 
@@ -101,10 +100,10 @@ const Dashboard = () => {
           <div className="chart-wrapper" style={{ width: '100%', height: 300 }}>
             <ChartArea data={detectedData} loading={loading} error={error} maxY={sharedMaxY} />
           
-            <ChartArea2 data={highData} loading={loading} error={error} maxY={sharedMaxY} />
+            <HighQualityErrorsBarChart data={highData} loading={loading} error={error} maxY={sharedMaxY} />
           </div>
 
-          <div className="chart-wrapper" style={{ width: '100%', height: 300 }}>
+          <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
             <ChartAreaCompareModels />
           </div>
         </div>
@@ -138,7 +137,7 @@ function ChartArea({ data, loading, error, maxY }) {
   );
 }
 
-function ChartArea2({ data, loading, error, maxY }) {
+function HighQualityErrorsBarChart({ data, loading, error, maxY }) {
   if (loading) {
     return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>Loading chart data...</div>;
   }
