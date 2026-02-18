@@ -24,6 +24,7 @@ import MetricChart from "../MetricChart";
  * This is the main page for analyzing test results.
  */
 const Dashboard = () => {
+  const { projectId } = useParams(); 
   const [detectedData, setDetectedData] = useState([]);
   const [highData, setHighData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -335,12 +336,15 @@ function ChartAreaCompareModels() {
 }
 
 function Combined() {
-  return <CombinedGraph />;
+  const { projectId } = useParams()
+  return <CombinedGraph projectId = {projectId}/>;
 }
 
 function Stability() {
-  return <StabilityGraph/>;
+  const { projectId } = useParams()
+  return <StabilityGraph projectId = {projectId}/>;
 }
+
 function Accuracy(){
   
  const { projectId } = useParams()

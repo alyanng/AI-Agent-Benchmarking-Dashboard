@@ -3,7 +3,8 @@ import './Home.css'
 import { useState, useEffect } from 'react';
 import NavBar from "./NavBar";
 
-export default function StabilityGraph() {
+export default function StabilityGraph({projectId}) {
+    // const { projectId } = useParams();
     const [stability, setStability] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -13,7 +14,7 @@ export default function StabilityGraph() {
      useEffect(() => {
                 const fetchData = async () => {
                     try{
-                        const response = await fetch (`${API_BASE_URL}/get_stability_data`)
+                        const response = await fetch (`${API_BASE_URL}/get_stability_data?project_id=${projectId}`)
                         const stabilityData = await response.json()
                         setStability(stabilityData)
                         setLoading(false)
@@ -26,7 +27,7 @@ export default function StabilityGraph() {
                 }
     
             fetchData()
-    }, [])
+    }, [projectId])
 
 
     if (loading) return <div>Loading...</div>

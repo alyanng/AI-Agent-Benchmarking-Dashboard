@@ -17,7 +17,7 @@ def connect_to_db():
     )
     return conn
 #Gets data necessary for showing stability graph from db
-def get_stability_results():
+def get_stability_results(project_id):
     conn = connect_to_db()
     cur = conn.cursor()
     cur.execute(
@@ -28,8 +28,10 @@ def get_stability_results():
         detected_errors,
         configuration_id
     FROM results
+    WHERE project_id = %s
     ORDER BY configuration_id ASC
-    """
+    """,
+    (project_id,)
     )
     rows = cur.fetchall()
 
