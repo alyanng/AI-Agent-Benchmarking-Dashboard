@@ -39,8 +39,6 @@ export default function AgentPerformance() {
   if (data.length === 0) return <div>No performance data found.</div>;
 
   return (
-    <>
-      <NavBar />
       <div style={{ padding: 16 }}>
         <h2>Agent Performance - Project {projectId}</h2>
 
@@ -50,6 +48,5 @@ export default function AgentPerformance() {
         <h3>Average Duration per Prompt (Minutes)</h3>
         <MetricChart data={data} yKey="duration" yLabel="Duration" />
       </div>
-    </>
   );
 }

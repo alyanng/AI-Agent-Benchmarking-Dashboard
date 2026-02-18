@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import CombinedGraph from "../combined";
 import StabilityGraph from "../stability";
+import AgentPerformance from "../AgentPerformance";
 
 
 /**
@@ -117,6 +118,10 @@ const Dashboard = () => {
 
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
             <Stability/>
+          </div>
+
+          <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
+            <Fixes/>
           </div>
          
     <div className="chart-wrapper" style={{ width: '100%', height: 400 }}>
@@ -368,6 +373,10 @@ const projectId = 2;
 
     return ( <Accuracy_graph configdata={configurations}/> );
  
+}
+
+function Fixes() {
+  return <AgentPerformance/>
 }
 
 
