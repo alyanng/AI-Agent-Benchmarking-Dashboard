@@ -4,6 +4,7 @@ import json
 from typing import Optional, List
 from pydantic import BaseModel
 from store_error_info import save_error_records
+from datetime import datetime
 
 
 from results_and_configuration_info import insert_configurations
@@ -24,9 +25,9 @@ class ErrorRecord(BaseModel):
 
 
 class DebugReportSummary(BaseModel):
-    total_errors_identified: int
-    errors_fixed: int
-    errors_not_fixed: int
+    total_errors_identified: Optional[int] = 0
+    errors_fixed: Optional[int] = 0
+    errors_not_fixed: Optional[int] = 0
     deployment_correlation: Optional[str] = ""
     recommendations: Optional[List[str]] = []
 
@@ -34,7 +35,7 @@ class DebugReportSummary(BaseModel):
 class DebugReport(BaseModel):
     project_name: str
     project_github_url: str
-    task_prompt_timestamp: str
+    task_prompt_timestamp: Optional[str] = None  # Make optional
     number_of_fixes: int
     total_time_spent_minutes: int
     number_of_errors_from_raygun: int
@@ -58,6 +59,7 @@ async def save_json_data(request: SaveJsonRequest):
         prompt = request.prompt
         
         print(f"Received JSON report for project: {report.project_name}")
+        print(f"Full report data: {report.dict()}")
         
         # Insert project into 'projects' table
         project_id = insert_project(
