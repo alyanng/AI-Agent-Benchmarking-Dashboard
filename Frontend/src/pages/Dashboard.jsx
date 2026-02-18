@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 import CombinedGraph from "../combined";
 import StabilityGraph from "../stability";
-import AgentPerformance from "../AgentPerformance";
+import MetricChart from "../MetricChart";
 
 
 /**
@@ -120,7 +120,7 @@ const Dashboard = () => {
             <Stability/>
           </div>
 
-          <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
+          <div className="chart-wrapper" style={{ width: '100%', height: 900 }}>
             <Fixes/>
           </div>
          
@@ -343,8 +343,8 @@ function Stability() {
 }
 function Accuracy(){
   
-//  const { projectId } = useParams()
-const projectId = 2;
+ const { projectId } = useParams()
+// const projectId = 2;
     const [configurations, setConfigurations] = useState([])
     const navigate = useNavigate()
     const [loading, setLoading] = useState(true)
@@ -376,7 +376,44 @@ const projectId = 2;
 }
 
 function Fixes() {
-  return <AgentPerformance/>
+   const { projectId } = useParams();
+  // const projectId = 2;
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // CHANGED: fetch all prompts for the project
+        const res = await fetch(
+          `${API_BASE_URL}/get_performance_data?project_id=${projectId}`
+        );
+
+        const json = await res.json();
+        setData(json);
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch performance data:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [projectId]);
+  return (
+    <div>
+      <h3>Average Fixed Errors per Prompt</h3>
+      <MetricChart data={data} yKey="fixes" yLabel="Errors Fixed" />
+    
+      <h3>Average Duration per Prompt (Minutes)</h3>
+      <MetricChart data={data} yKey="duration" yLabel="Duration" />
+
+    </div>
+  )
 }
 
 
