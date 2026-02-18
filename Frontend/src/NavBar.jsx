@@ -39,6 +39,7 @@ function NavBar(){
       <div className="NavBar-menu">
       <a href="/#Home">Home</a>
       <a href="/projects">Review</a>
+      <a href='/projectlist'>Config</a>
       </div>
         
     </div>

@@ -20,14 +20,19 @@ async def call_mcp_tool(request:MCPRequest):
         url = os.getenv("MCP_SERVER_URL"),
         token =os.getenv("MCP_BEARER_TOKEN") 
     )
-    
+     
         result = await client.call_tool(request.tool_name,request.prompt)
    
+        # return json.loads(result.text)
+   
+        print("result:",result)
         return {
         "success": True,
         "data":result
    }
     except Exception as e:
-        raise HTTPException(status_code=500,detail=str(e))   
+        import traceback
+        traceback.print_exc() 
+        raise HTTPException(status_code=500, detail=str(e))
  
     

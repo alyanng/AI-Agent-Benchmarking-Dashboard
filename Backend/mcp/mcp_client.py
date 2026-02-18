@@ -39,8 +39,49 @@ class MCPClient:
                 self.url,
                 json=payload,
                 headers=headers,
-                timeout=60.0
+                timeout=600.0
             )
+            
+            
+            # print("Status Code:", response.status_code)
+            # print("Response body:", response.text)
             response.raise_for_status()
-            result = response.json()
-            return result
+            
+            rawtext=response.text
+            all_messages = [] 
+            
+            for line in rawtext.split('\n'):
+                if line.startswith('data:'):
+                    json_str = line[5:].strip() 
+                    # result=json.loads (json_str)
+                    # =========
+                    if json_str:
+                        try:
+                            result = json.loads(json_str)
+                  
+                            if 'result' in result and 'content' in result['result']:
+                                all_messages.append(result)
+                        except json.JSONDecodeError:
+                            continue
+        
+       
+            if all_messages:
+           
+                combined_text = ""
+                for msg in all_messages:
+                     combined_text += msg['result']['content'][0]['text'] + "\n\n"
+            
+                return {
+                "result": {
+                    "content": [{
+                        "type": "text",
+                        "text": combined_text
+                    }]
+                    }
+                }
+                    
+                    
+                    
+            #         return result
+            # raise Exception("No data found in SSE response")
+          
