@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import NavBar from "./NavBar";
-import ExpandableText from "./ExpandableText";
+import NavBar from "../NavBar";
+import ExpandableText from "../ExpandableText";
 
-import './configuration.css';
-import './Home.css';
+import '../configuration.css';
+import '../Home.css';
 
-function Configurations() {
+function SystemPromptList() {
   const { projectId } = useParams();
   const [configurations, setConfigurations] = useState([]);
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ function Configurations() {
         setConfigurations(configData);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching configurations:', err);
+        console.error('Error fetching system prompts:', err);
         setError(err.message);
         setLoading(false);
       }
@@ -39,28 +39,24 @@ function Configurations() {
       <NavBar />
 
       <div style={{ padding: 16 }}>
-        {/* Page Header + Agent Performance Button */}
+       
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h1>Configurations</h1>
+          <h1>System prompts</h1>
 
-          {/* CHANGED: simplified - button goes directly to project-level performance */}
-          <button
-            className="performance-button"
-            onClick={() => navigate(`/agent-performance/${projectId}`)}
+         
+          <button className= "error-button" style = {{width: "15%"}}
+            onClick={() => navigate(`/addsystemprompt/${projectId}`)}
           >
-            View Agent Performance
+            Add new system prompt
           </button>
         </div>
 
-        {/* Configurations Table */}
+       
         <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
             <tr>
               <th>Configuration ID</th>
               <th>System Prompt</th>
-              <th>Number of Fixes</th>
-              <th>Duration</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -69,16 +65,6 @@ function Configurations() {
                 <td>{config.configid}</td>
                 <td className="formatted-text">
                   <ExpandableText text={config.prompt} wordLimit={50} />
-                </td>
-                <td>{config.fixes}</td>
-                <td>{config.duration}</td>
-                <td>
-                  <button
-                    className="error-button"
-                    onClick={() => navigate(`/errors/${config.configid}`)}
-                  >
-                    Errors
-                  </button>
                 </td>
               </tr>
             ))}
@@ -89,4 +75,4 @@ function Configurations() {
   );
 }
 
-export default Configurations;
+export default SystemPromptList;

@@ -54,11 +54,16 @@ def get_config_results(project_id):
         c.system_prompt,
         c.model,
         r.number_of_fixes,
-        r.duration
+        r.duration,
+        r.high_quality_errors,
+        r.detected_errors,
+        r.results_id,
+        AVG(r.high_quality_errors) OVER (PARTITION BY c.configuration_ID) as avg_hq_errors,
+        AVG(r.detected_errors) OVER (PARTITION BY c.configuration_ID) as avg_detected_errors
     FROM configuration c
-    LEFT JOIN results r ON c.configuration_ID = r.configuration_id
+    INNER JOIN results r ON c.configuration_ID = r.configuration_id
     WHERE c.project_id = %s
-    ORDER BY c.configuration_id DESC
+    ORDER BY r.results_id 
     """,
     (project_id,)
 )
@@ -72,11 +77,28 @@ def get_config_results(project_id):
             "model": row[2],
             "fixes":row[3],
             "duration": row[4],
+            "high_quality_errors":row[5],
+            "detected_errors":row[6],
+            "results_id":row[7],
+            "avg_hq_errors": row[8],
+            "avg_detected_errors":row[9]
         })
     cur.close()
     conn.close()
     return configAndResults
 
+def insert_new_system_prompts(projectid: int, prompt):
+    conn = connect_to_db()
+    cur = conn.cursor()
+    cur.execute(
+    "INSERT INTO configuration (system_prompt, project_id) VALUES (%s, %s) RETURNING configuration_ID;",
+    (prompt, projectid)
+    )
+    config_id = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
+    conn.close()
+    return config_id
     
     
 

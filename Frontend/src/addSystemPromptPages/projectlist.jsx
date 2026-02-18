@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import NavBar from './NavBar';
-import './Home.css'
+import NavBar from '../NavBar';
+import '../Home.css'
 
-export default function Projects() {
+export default function ProjectList() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState("");
@@ -35,7 +35,7 @@ export default function Projects() {
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
   if (errMsg) return (
     <div style={{ padding: 16, color: "red" }}>
-      <h3>⚠️ Error Loading Projects</h3>
+      <h3>Error Loading Projects</h3>
       <p><strong>{errMsg}</strong></p>
     </div>
   );
@@ -52,30 +52,22 @@ export default function Projects() {
     <>
       <NavBar />
       <div style={{ padding: 16 }}>
-        <h2>My Tested Projects</h2>
-        <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
+        <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "50%", margin: "0 auto"}}>
           <thead>
             <tr>
-              <th>No.</th>
               <th>Project Name</th>
-              <th>GitHub URL</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {projects.map((p, index) => (
               <tr key={p.project_id}>
-                <td>{index + 1}</td>
                 <td>{p.project_name}</td>
                 <td>
-                  <a href={p.github_url} target="_blank" rel="noopener noreferrer">
-                    {p.github_url}
-                  </a>
-                </td>
-                <td>
-                  <button className="config-button" onClick={() => navigate(`/configurations/${p.project_id}`)}>
-                    More Details
-                  </button>
+                    <div style={{textAlign: "center"}}>
+                    <button className="config-button" onClick={() => navigate(`/systempromptlist/${p.project_id}`)}>
+                    System prompts
+                    </button>
+                    </div>
                 </td>
               </tr>
             ))}
