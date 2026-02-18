@@ -1,0 +1,56 @@
+{
+  "project_name": "TestProject",
+  "project_github_url": "https://github.com/test/project",
+  "task_prompt_timestamp": "2026-02-19T02:00:00Z",
+  "number_of_fixes": 5,
+  "total_time_spent_minutes": 30,
+  "number_of_errors_from_raygun": 7,
+  "errors": [
+    {
+      "error_id": "test001",
+      "error_type": "NullPointerException",
+      "was_fixed": true
+    },
+    {
+      "error_id": "test002",
+      "error_type": "IndexOutOfBoundsException",
+      "was_fixed": true
+    },
+    {
+      "error_id": "test003",
+      "error_type": "FileNotFoundException",
+      "was_fixed": false
+    },
+    {
+      "error_id": "test004",
+      "error_type": "IllegalArgumentException",
+      "was_fixed": true
+    },
+    {
+      "error_id": "test005",
+      "error_type": "ArithmeticException",
+      "was_fixed": true
+    },
+    {
+      "error_id": "test006",
+      "error_type": "NoSuchElementException",
+      "was_fixed": true
+    },
+    {
+      "error_id": "test007",
+      "error_type": "InputMismatchException",
+      "was_fixed": false
+    }
+  ],
+  "summary": {
+    "total_errors_identified": 7,
+    "errors_fixed": 5,
+    "errors_not_fixed": 2,
+    "deployment_correlation": "Introduced in v1.0.0",
+    "recommendations": [
+      "Add null checks before method calls",
+      "Validate input parameters",
+      "Add proper error handling"
+    ]
+  }
+}
