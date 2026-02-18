@@ -22,23 +22,65 @@ function extractJsonFromAiResponse(aiText) {
 
 // Utility function to validate debug report JSON structure
 function validateDebugReport(data) {
+  console.log("Validating debug report:", data);
+  
   // Check required fields
-  if (!data.project_name || !data.project_github_url) {
+  if (!data.project_name) {
+    console.log("Validation failed: missing project_name");
+    return false;
+  }
+  
+  if (!data.project_github_url) {
+    console.log("Validation failed: missing project_github_url");
     return false;
   }
   
   // Check errors is an array
   if (!Array.isArray(data.errors)) {
+    console.log("Validation failed: errors is not an array");
+    return false;
+  }
+  
+  // Check array is not empty
+  if (data.errors.length === 0) {
+    console.log("Validation failed: errors array is empty");
     return false;
   }
   
   // Check each error object has required fields
-  for (const error of data.errors) {
-    if (!error.error_id || !error.error_type || typeof error.was_fixed !== 'boolean') {
+  for (let i = 0; i < data.errors.length; i++) {
+    const error = data.errors[i];
+    if (!error.error_id) {
+      console.log(`Validation failed: error[${i}] missing error_id`);
+      return false;
+    }
+    if (!error.error_type) {
+      console.log(`Validation failed: error[${i}] missing error_type`);
+      return false;
+    }
+    if (typeof error.was_fixed !== 'boolean') {
+      console.log(`Validation failed: error[${i}] was_fixed is not boolean`);
       return false;
     }
   }
   
+  // Check numeric fields
+  if (typeof data.number_of_fixes !== 'number') {
+    console.log("Validation failed: number_of_fixes is not a number");
+    return false;
+  }
+  
+  if (typeof data.total_time_spent_minutes !== 'number') {
+    console.log("Validation failed: total_time_spent_minutes is not a number");
+    return false;
+  }
+  
+  if (typeof data.number_of_errors_from_raygun !== 'number') {
+    console.log("Validation failed: number_of_errors_from_raygun is not a number");
+    return false;
+  }
+  
+  console.log("Validation passed!");
   return true;
 }
 
@@ -83,7 +125,7 @@ function Send_to_Mcp(data) {
 
       var receiveddata = await response.json();
 
-      console.log(receiveddata);
+      console.log("Received data from AI:", receiveddata);
       setStatus("Message sent successfully..");
       
       const aiMessage = {
@@ -96,26 +138,32 @@ function Send_to_Mcp(data) {
       // Auto-detect and extract JSON from AI response
       const extractedJson = extractJsonFromAiResponse(aiMessage.content);
       if (extractedJson) {
+        console.log("Extracted JSON string:", extractedJson);
         try {
           const parsedData = JSON.parse(extractedJson);
+          console.log("Parsed JSON data:", parsedData);
+          
           if (validateDebugReport(parsedData)) {
-            console.log("Valid debug report detected:", parsedData);
+            console.log("✅ Valid debug report detected");
             setDetectedReport(parsedData);
             setShowSaveButton(true);
             setSaveStatus("✅ Debug report detected and ready to save");
           } else {
-            console.log("JSON detected but validation failed");
-            setSaveStatus("");
+            console.log("❌ JSON validation failed");
+            setSaveStatus("⚠️ JSON detected but validation failed - check console for details");
           }
         } catch (e) {
-          console.log("JSON parsing failed:", e);
+          console.error("JSON parsing failed:", e);
+          console.log("Failed JSON string:", extractedJson);
           setSaveStatus("");
         }
+      } else {
+        console.log("No JSON found in AI response");
       }
 
       setPrompt("");
     } catch (error) {
-      console.log(error);
+      console.error("Error in handleSendPrompt:", error);
       setStatus("Failed to send message. Please try again.");
     }
   }
@@ -128,6 +176,7 @@ function Send_to_Mcp(data) {
     }
 
     setSaveStatus("Saving report...");
+    console.log("Sending report to backend:", detectedReport);
 
     try {
       const response = await fetch(
@@ -142,16 +191,20 @@ function Send_to_Mcp(data) {
         }
       );
       
+      console.log("Backend response status:", response.status);
       const result = await response.json();
+      console.log("Backend response:", result);
       
       if (result.success) {
-        alert("✅ Report saved to database successfully!");
+        alert(`✅ Report saved successfully!\n\nProject ID: ${result.project_id}\nConfig ID: ${result.config_id}\nErrors inserted: ${result.total_errors_inserted}`);
         setSaveStatus("✅ Report saved successfully");
         setShowSaveButton(false);
         setDetectedReport(null);
       } else {
-        alert("❌ Failed to save report: " + (result.error || "Unknown error"));
+        const errorMsg = result.error || "Unknown error";
+        alert("❌ Failed to save report: " + errorMsg);
         setSaveStatus("❌ Failed to save report");
+        console.error("Save failed:", result);
       }
     } catch (error) {
       console.error("Save error:", error);
