@@ -45,8 +45,8 @@ function Configurations() {
 
           {/* CHANGED: simplified - button goes directly to project-level performance */}
           <button
-            className="performance-button"
-            onClick={() => navigate(`/agent-performance/${projectId}`)}
+            className="error-button" style = {{width: "15%"}}
+            onClick={() => navigate(`/dashboard/${projectId}`)}
           >
             View Agent Performance
           </button>

@@ -3,7 +3,8 @@ import './Home.css'
 import { useState, useEffect } from 'react';
 import NavBar from "./NavBar";
 
-export default function CombinedGraph() {
+export default function CombinedGraph({projectId}) {
+    // const { projectId } = useParams();
     const [combine, setCombine] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -13,7 +14,7 @@ export default function CombinedGraph() {
      useEffect(() => {
                 const fetchData = async () => {
                     try{ 
-                        const response = await fetch (`${API_BASE_URL}/get_combined_data`)
+                        const response = await fetch (`${API_BASE_URL}/get_combined_data?project_id=${projectId}`)
                         const data = await response.json()
                         setCombine(data)
                         setLoading(false)
@@ -26,7 +27,7 @@ export default function CombinedGraph() {
                 }
     
             fetchData()
-    }, [])
+    }, [projectId])
 
 
     if (loading) return <div>Loading...</div>

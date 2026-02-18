@@ -18,7 +18,7 @@ def connect_to_db():
     return conn
 
 #Gets all the data for the combined graph 
-def get_all_results_data():
+def get_all_results_data(project_id: int):
     conn = connect_to_db()
     cur = conn.cursor()
     cur.execute(
@@ -31,8 +31,10 @@ def get_all_results_data():
         configuration_id,
         results_id
     FROM results
+    WHERE project_id = %s
     ORDER BY configuration_id ASC
-    """
+    """,
+    (project_id,)
     )
     rows = cur.fetchall()
     data=[]

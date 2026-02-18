@@ -26,7 +26,7 @@ function App() {
         <Route path="/projects" element={<Projects />} /> {/* Projects list page */}
         <Route path="/stability" element={<StabilityGraph />} />
         <Route path="/combined" element={<CombinedGraph />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/:projectId" element={<Dashboard />} />
         <Route path="/projectlist" element={<ProjectList />} />
         <Route path="/systempromptlist/:projectId" element={<SystemPromptList/>} />
         <Route path="/addsystemprompt/:projectId" element={<AddSystemPrompt />} />
