@@ -36,9 +36,21 @@ function NavBar(){
         </button>
       )}
       <p>AI-Agent-Benchmarking-Dashboard</p>
-      <div className="NavBar-menu"><a href="/#Home">Home</a></div>
+      <div className="NavBar-menu">
+      <a href="/#Home">Home</a>
+      <a href="/projects">Review</a>
+      <a href='/projectlist'>Config</a>
+      </div>
+        
     </div>
   );
 }
 
 export default NavBar;
+
+
+  // <div className="review">
+  //     <h3>Review my record</h3>
+  //     <button id="review_button" onClick={() => navigate("/projects")}>Review</button>
+    
+  //     </div>

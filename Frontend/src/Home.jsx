@@ -4,6 +4,7 @@ import FileUploadwithtext from "./FileUploadwithtext";
 import NavBar from "./NavBar";
 import './Home.css'
 import { useNavigate } from "react-router-dom";
+import Send_to_Mcp from "./Send_to_Mcp";
 
 function Home() {
   const navigate = useNavigate(); 
@@ -11,13 +12,10 @@ function Home() {
   return (
     <div className="Home">
       <div className="Home-NavBar"><NavBar/> </div>
-      <div className="review">
-      <h3>Review my record</h3>
-      <button id="review_button" onClick={() => navigate("/projects")}>Review</button>
-      {/* <button id="error_button" onClick={() => navigate("/errors")}>Error Log</button> */}
-      </div>
+  
+      <Send_to_Mcp/>
       
-      <FileUploadwithtext/>
+      {/* <FileUploadwithtext/> */}
     </div>
   );
 }

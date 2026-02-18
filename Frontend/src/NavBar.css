@@ -6,7 +6,7 @@ width: 100%;
     justify-content: space-between;
     background-color:rgb(134, 251, 158);
     padding-left: 20px;
-    padding-right: 80px;
+    padding-right: 100px;
     box-sizing: border-box;
     align-items: center;
     padding-top: 10px;
@@ -15,12 +15,14 @@ width: 100%;
 }
 
 .NavBar-menu{
+display: flex;
 
 background-color:rgb(134, 251, 158);
 padding: 8dpx;
 border-radius: 3px;
 font-weight: bold;
 color:  rgb(45, 43, 46);
+gap:10px;
   
 }
 
