@@ -12,6 +12,8 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts';
+import CombinedGraph from "../combined";
+import StabilityGraph from "../stability";
 
 
 /**
@@ -107,6 +109,14 @@ const Dashboard = () => {
 
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
             <ChartAreaCompareModels />
+          </div>
+
+          <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
+            <Combined/>
+          </div>
+
+          <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
+            <Stability/>
           </div>
          
     <div className="chart-wrapper" style={{ width: '100%', height: 400 }}>
@@ -319,6 +329,13 @@ function ChartAreaCompareModels() {
   );
 }
 
+function Combined() {
+  return <CombinedGraph />;
+}
+
+function Stability() {
+  return <StabilityGraph/>;
+}
 function Accuracy(){
   
 //  const { projectId } = useParams()

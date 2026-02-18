@@ -6,7 +6,7 @@ from store_error_info import save_error_records
 
 
 from results_and_configuration_info import insert_configurations
-from results_and_configuration_info import insert_fixes
+from results_and_configuration_info import insert_fixes, insert_new_system_prompts
 from store_error_info import save_error_records
 from projects_info import insert_project
 
@@ -73,3 +73,12 @@ async def upload_ai_json(file:UploadFile=File(...), prompt: Optional[str] = Form
         "inserted_new_rows": inserted
         
    }
+
+@router.post("/upload_system_prompt")
+async def upload_system_prompt(projectid: int, prompt: Optional[str] = Form(None)):
+    config = insert_new_system_prompts(projectid, prompt)
+    return {
+        "success": True,
+        "config": config
+    }
+
