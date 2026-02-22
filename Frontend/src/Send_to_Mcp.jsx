@@ -30,7 +30,7 @@ function parseCandidateReport(text) {
       // Continue with original string
     }
   } else {
-    console.debug("ℹ️ No unicode escapes detected");
+    console.debug("ℹ️ No unicode escapes detected in string");
   }
   
   // Step 3: Strip wrappers
@@ -102,13 +102,13 @@ function parseCandidateReport(text) {
   
   // Must contain project_name (string)
   if (!parsed.project_name || typeof parsed.project_name !== 'string') {
-    console.debug("❌ Missing or invalid project_name");
+    console.debug("❌ Missing or invalid project_name, value:", parsed.project_name);
     return null;
   }
   
   // Must contain summary (object)
   if (!parsed.summary || typeof parsed.summary !== 'object') {
-    console.debug("❌ Missing or invalid summary");
+    console.debug("❌ Missing or invalid summary, value:", parsed.summary);
     return null;
   }
   
@@ -155,12 +155,13 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
   // E.g., { content: [...messages...] }
   if (mcpResponse && typeof mcpResponse === 'object' && !Array.isArray(mcpResponse)) {
     console.debug("🔧 Response is object, checking for content array");
+    console.debug("Object keys:", Object.keys(mcpResponse));
     if (Array.isArray(mcpResponse.content)) {
       console.debug("✅ Found content array in wrapper object (NEW format)");
       mcpResponse = mcpResponse.content;
     } else {
       console.debug("❌ Object does not have content array");
-      console.debug("Object keys:", Object.keys(mcpResponse));
+      console.debug("Object structure:", mcpResponse);
       return null;
     }
   }
@@ -179,6 +180,7 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
     
     console.debug(`\n--- Message ${i} ---`);
     console.debug("Message:", message);
+    console.debug("Message keys:", message ? Object.keys(message) : "null");
     
     if (!message) {
       console.debug(`❌ Message ${i} is null/undefined`);
@@ -186,8 +188,7 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
     }
     
     if (!Array.isArray(message.content)) {
-      console.debug(`❌ Message ${i} has no content array`);
-      console.debug("Message keys:", Object.keys(message));
+      console.debug(`❌ Message ${i} has no content array, content type:`, typeof message.content);
       continue;
     }
     
@@ -198,6 +199,7 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
       const block = message.content[j];
       
       console.debug(`  --- Block ${j} ---`);
+      console.debug(`  Block:`, block);
       
       if (!block) {
         console.debug(`  ❌ Block ${j} is null/undefined`);
@@ -206,15 +208,17 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
       
       console.debug(`  Block type: ${block.type}`);
       console.debug(`  Has text? ${!!block.text}`);
+      console.debug(`  Text type: ${typeof block.text}`);
       
       if (block.type !== 'text') {
-        console.debug(`  ⏭️ Skipping non-text block`);
+        console.debug(`  ⏭️ Skipping non-text block (type: ${block.type})`);
         continue;
       }
       
       if (typeof block.text === 'string') {
         console.debug(`  ✅ Block ${j} has text, length: ${block.text.length}`);
-        console.debug(`  Text preview (first 200 chars): ${block.text.substring(0, 200)}`);
+        console.debug(`  Text preview (first 300 chars):`);
+        console.debug(block.text.substring(0, 300));
         
         const payload = parseCandidateReport(block.text);
         
@@ -384,6 +388,10 @@ function Send_to_Mcp(data) {
           messagesArray = mcpResponseData.content;
         } else if (mcpResponseData.content) {
           console.log("🔍 Has content but not array, type:", typeof mcpResponseData.content);
+          // Try old format - single object with content array of blocks
+          if (Array.isArray(mcpResponseData.content)) {
+            messagesArray = [mcpResponseData]; // Wrap in array
+          }
         } else {
           console.log("🔍 No content property found");
         }
@@ -395,12 +403,12 @@ function Send_to_Mcp(data) {
         for (let i = messagesArray.length - 1; i >= 0; i--) {
           const msg = messagesArray[i];
           console.log(`🔍 Message ${i}:`, msg);
-          if (msg.content && Array.isArray(msg.content)) {
+          if (msg && msg.content && Array.isArray(msg.content)) {
             console.log(`🔍 Message ${i} has ${msg.content.length} content blocks`);
             for (let j = msg.content.length - 1; j >= 0; j--) {
               const block = msg.content[j];
               console.log(`🔍 Block ${j}:`, block);
-              if (block.type === 'text' && block.text) {
+              if (block && block.type === 'text' && block.text) {
                 displayContent = block.text;
                 console.log("🔍 Found display text, length:", displayContent.length);
                 break;
@@ -428,10 +436,17 @@ function Send_to_Mcp(data) {
 
       // Extract report JSON from text blocks
       console.log("\n🚀 Calling extractReportJsonFromTextBlocks...");
-      console.log("🚀 Input:", messagesArray || mcpResponseData);
-      const payload = extractReportJsonFromTextBlocks(messagesArray || mcpResponseData);
+      console.log("🚀 Input (messagesArray):", messagesArray);
+      let payload = extractReportJsonFromTextBlocks(messagesArray || mcpResponseData);
       
-      console.log("🚀 Payload result:", payload);
+      console.log("🚀 Payload result from messagesArray:", payload);
+      
+      // FALLBACK: If extraction from messagesArray failed but we have displayContent, try parsing that
+      if (!payload && displayContent) {
+        console.log("🔄 Fallback: trying to parse displayContent directly");
+        payload = parseCandidateReport(displayContent);
+        console.log("🔄 Fallback result:", payload);
+      }
       
       if (payload) {
         console.log("✅✅✅ Payload found, validating...");
