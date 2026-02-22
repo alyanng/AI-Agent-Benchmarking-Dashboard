@@ -10,10 +10,23 @@ function parseCandidateReport(text) {
   }
   
   let s = text.trim();
-  console.debug("parseCandidateReport input:", s.substring(0, 100));
+  console.debug("parseCandidateReport input (first 200 chars):", s.substring(0, 200));
   
-  // Step 2: Unicode escapes are already decoded by JSON.parse when receiving the response
-  // No need to decode again - skip this step
+  // Step 2: Decode unicode escapes if they appear as literal text (e.g., "\u0022" as a string)
+  // This happens when the response is double-encoded
+  if (s.includes('\\u00') || s.includes('\\u')) {
+    console.debug("Detected unicode escapes, decoding...");
+    try {
+      // Replace all \uXXXX patterns with actual characters
+      s = s.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
+        return String.fromCharCode(parseInt(hex, 16));
+      });
+      console.debug("After unicode decode (first 200 chars):", s.substring(0, 200));
+    } catch (err) {
+      console.debug("Unicode decode error:", err.message);
+      // Continue with original string
+    }
+  }
   
   // Step 3: Strip wrappers
   // Remove markdown fences - check for actual backtick characters
@@ -31,7 +44,7 @@ function parseCandidateReport(text) {
   }
   s = s.trim();
   
-  console.debug("After fence removal:", s.substring(0, 100));
+  console.debug("After fence removal (first 200 chars):", s.substring(0, 200));
   
   // Remove <artifact> tags if present
   const artifactStart = s.indexOf('<artifact');
@@ -40,10 +53,9 @@ function parseCandidateReport(text) {
     const artifactEnd = s.indexOf('</artifact>');
     if (contentStart !== -1 && artifactEnd !== -1 && artifactEnd > contentStart) {
       s = s.substring(contentStart + 1, artifactEnd).trim();
+      console.debug("After artifact removal (first 200 chars):", s.substring(0, 200));
     }
   }
-  
-  console.debug("After artifact removal:", s.substring(0, 100));
   
   // Step 4: Extract JSON substring between first { and last }
   const firstBrace = s.indexOf('{');
@@ -55,15 +67,16 @@ function parseCandidateReport(text) {
   }
   
   const jsonStr = s.substring(firstBrace, lastBrace + 1);
-  console.debug("Extracted JSON string:", jsonStr.substring(0, 100));
+  console.debug("Extracted JSON string (first 200 chars):", jsonStr.substring(0, 200));
   
   // Step 5: Parse JSON
   let parsed;
   try {
     parsed = JSON.parse(jsonStr);
-    console.debug("JSON.parse succeeded");
+    console.debug("✅ JSON.parse succeeded");
   } catch (err) {
-    console.debug("JSON.parse failed:", err.message);
+    console.debug("❌ JSON.parse failed:", err.message);
+    console.debug("Failed JSON (first 500 chars):", jsonStr.substring(0, 500));
     return null;
   }
   
@@ -97,7 +110,7 @@ function parseCandidateReport(text) {
     return null;
   }
   
-  console.debug("✅ parseCandidateReport successful");
+  console.debug("✅✅✅ parseCandidateReport successful!", parsed);
   // Step 7: Return valid object
   return parsed;
 }
@@ -123,7 +136,7 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
       continue;
     }
     
-    console.debug(`Message ${i}: has ${message.content.length} content blocks`);
+    console.debug(`Message ${i}: has ${message.content.length} content blocks, role=${message.role}`);
     
     // Iterate blocks from last to first
     for (let j = message.content.length - 1; j >= 0; j--) {
@@ -134,7 +147,7 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
         continue;
       }
       
-      console.debug(`Block ${j}: type=${block.type}`);
+      console.debug(`Block ${j}: type=${block.type}, hasText=${!!block.text}`);
       
       if (block.type !== 'text') {
         continue;
@@ -144,14 +157,14 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
         console.debug(`Block ${j}: text length=${block.text.length}`);
         const payload = parseCandidateReport(block.text);
         if (payload) {
-          console.debug("Found valid payload in text block");
+          console.debug("🎉 Found valid payload in text block!");
           return payload;
         }
       }
     }
   }
   
-  console.debug("No valid payload found in any text block");
+  console.debug("❌ No valid payload found in any text block");
   return null;
 }
 
