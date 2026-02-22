@@ -118,7 +118,7 @@ function parseCandidateReport(text) {
 // Main extractor: scan MCP response text blocks for report JSON
 function extractReportJsonFromTextBlocks(mcpResponse) {
   console.debug("extractReportJsonFromTextBlocks called with type:", typeof mcpResponse);
-  console.debug("Is array?", Array.isArray(mcpResponse));
+  console.debug("Full mcpResponse:", mcpResponse);
   
   // If response is a string, try to parse it as JSON array first
   if (typeof mcpResponse === 'string') {
@@ -132,9 +132,22 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
     }
   }
   
+  // Check if response is wrapped in an object with content property
+  // E.g., { content: [...messages...] }
+  if (mcpResponse && typeof mcpResponse === 'object' && !Array.isArray(mcpResponse)) {
+    console.debug("Response is object, checking for content array");
+    if (Array.isArray(mcpResponse.content)) {
+      console.debug("Found content array in object wrapper, using it as messages");
+      mcpResponse = mcpResponse.content;
+    } else {
+      console.debug("Object does not have content array, returning null");
+      return null;
+    }
+  }
+  
   // Only parse from array format (MCP messages)
   if (!Array.isArray(mcpResponse)) {
-    console.debug("Not an array after parse attempt, returning null");
+    console.debug("Not an array after unwrapping, returning null");
     return null;
   }
   
@@ -317,22 +330,31 @@ function Send_to_Mcp(data) {
       // For display in chat history, extract text from response
       let displayContent = "";
       
-      // Try to parse if it's a stringified array
-      if (typeof mcpResponseData === 'string') {
-        console.log("🔍 MCP response is a string, attempting to parse");
-        try {
-          mcpResponseData = JSON.parse(mcpResponseData);
-          console.log("🔍 Successfully parsed string to array/object");
-        } catch (err) {
-          console.log("🔍 Failed to parse string:", err.message);
+      // Unwrap if needed and prepare for text extraction
+      let messagesArray = null;
+      
+      if (Array.isArray(mcpResponseData)) {
+        console.log("🔍 MCP response is direct array");
+        messagesArray = mcpResponseData;
+      } else if (mcpResponseData && typeof mcpResponseData === 'object') {
+        console.log("🔍 MCP response is object, checking properties");
+        
+        // Check if it has content array (new wrapper format)
+        if (Array.isArray(mcpResponseData.content)) {
+          console.log("🔍 Found content array in wrapper object (NEW format)");
+          messagesArray = mcpResponseData.content;
+        } else if (mcpResponseData.content && Array.isArray(mcpResponseData.content)) {
+          console.log("🔍 Using old format with content array");
+          // Old format: single message with content array
+          displayContent = mcpResponseData.content[0]?.text || "";
         }
       }
       
-      if (mcpResponseData && Array.isArray(mcpResponseData)) {
-        console.log("🔍 Processing MCP array format with", mcpResponseData.length, "messages");
-        // New MCP format: extract text from last message for display
-        for (let i = mcpResponseData.length - 1; i >= 0; i--) {
-          const msg = mcpResponseData[i];
+      // Extract display text from messages array
+      if (messagesArray && Array.isArray(messagesArray)) {
+        console.log("🔍 Extracting display text from", messagesArray.length, "messages");
+        for (let i = messagesArray.length - 1; i >= 0; i--) {
+          const msg = messagesArray[i];
           if (msg.content && Array.isArray(msg.content)) {
             for (let j = msg.content.length - 1; j >= 0; j--) {
               const block = msg.content[j];
@@ -344,10 +366,6 @@ function Send_to_Mcp(data) {
             if (displayContent) break;
           }
         }
-      } else if (mcpResponseData?.content?.[0]?.text) {
-        console.log("🔍 Using old format fallback");
-        // Old format fallback
-        displayContent = mcpResponseData.content[0].text;
       }
       
       console.log("🔍 Display content length:", displayContent.length);
@@ -360,8 +378,8 @@ function Send_to_Mcp(data) {
       setChatHistory((prev) => [...prev, aiMessage]);
 
       // Extract report JSON from text blocks
-      console.log("🔍 Calling extractReportJsonFromTextBlocks...");
-      const payload = extractReportJsonFromTextBlocks(mcpResponseData);
+      console.log("🔍 Calling extractReportJsonFromTextBlocks with messagesArray:", messagesArray);
+      const payload = extractReportJsonFromTextBlocks(messagesArray || mcpResponseData);
       
       if (payload) {
         console.debug("Parsed report JSON:", payload);
