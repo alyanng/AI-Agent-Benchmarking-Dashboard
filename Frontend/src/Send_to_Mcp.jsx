@@ -10,28 +10,28 @@ function parseCandidateReport(text) {
   }
   
   let s = text.trim();
+  console.debug("parseCandidateReport input:", s.substring(0, 100));
   
-  // Step 2: Decode unicode escapes if present
-  // Check for patterns like \u0022 or \\u0022
-  if (s.includes('\\u00') || /\\u[0-9a-fA-F]{4}/.test(s)) {
-    try {
-      // Decode by wrapping in quotes and parsing (handles escaped sequences)
-      // First replace escaped backslashes to avoid double-decode
-      const decoded = s.replace(/\\\\u/g, '\\u');
-      // Use a safe decode approach
-      s = decoded.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
-        return String.fromCharCode(parseInt(hex, 16));
-      });
-    } catch (err) {
-      // If decode fails, continue with original
-    }
-  }
+  // Step 2: Unicode escapes are already decoded by JSON.parse when receiving the response
+  // No need to decode again - skip this step
   
   // Step 3: Strip wrappers
-  // Remove markdown fences
-  s = s.replace(/^```json\s*\n?/i, '').replace(/^```\s*\n?/, '');
-  s = s.replace(/\n?```\s*$/, '');
+  // Remove markdown fences - check for actual backtick characters
+  if (s.startsWith('```json') || s.startsWith('```')) {
+    const firstNewline = s.indexOf('\n');
+    if (firstNewline !== -1) {
+      s = s.substring(firstNewline + 1);
+    }
+  }
+  if (s.endsWith('```')) {
+    const lastBackticks = s.lastIndexOf('```');
+    if (lastBackticks !== -1) {
+      s = s.substring(0, lastBackticks);
+    }
+  }
   s = s.trim();
+  
+  console.debug("After fence removal:", s.substring(0, 100));
   
   // Remove <artifact> tags if present
   const artifactStart = s.indexOf('<artifact');
@@ -43,36 +43,45 @@ function parseCandidateReport(text) {
     }
   }
   
+  console.debug("After artifact removal:", s.substring(0, 100));
+  
   // Step 4: Extract JSON substring between first { and last }
   const firstBrace = s.indexOf('{');
   const lastBrace = s.lastIndexOf('}');
   
   if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    console.debug("No braces found or invalid brace positions");
     return null;
   }
   
   const jsonStr = s.substring(firstBrace, lastBrace + 1);
+  console.debug("Extracted JSON string:", jsonStr.substring(0, 100));
   
   // Step 5: Parse JSON
   let parsed;
   try {
     parsed = JSON.parse(jsonStr);
+    console.debug("JSON.parse succeeded");
   } catch (err) {
+    console.debug("JSON.parse failed:", err.message);
     return null;
   }
   
   // Step 6: Validate schema minimally
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    console.debug("Parsed result is not a valid object");
     return null;
   }
   
   // Must contain project_name (string)
   if (!parsed.project_name || typeof parsed.project_name !== 'string') {
+    console.debug("Missing or invalid project_name");
     return null;
   }
   
   // Must contain summary (object)
   if (!parsed.summary || typeof parsed.summary !== 'object') {
+    console.debug("Missing or invalid summary");
     return null;
   }
   
@@ -84,45 +93,65 @@ function parseCandidateReport(text) {
     typeof parsed.number_of_errors_from_raygun === 'number';
   
   if (!hasErrors && !hasNumericField) {
+    console.debug("Missing both errors array and numeric fields");
     return null;
   }
   
+  console.debug("✅ parseCandidateReport successful");
   // Step 7: Return valid object
   return parsed;
 }
 
 // Main extractor: scan MCP response text blocks for report JSON
 function extractReportJsonFromTextBlocks(mcpResponse) {
+  console.debug("extractReportJsonFromTextBlocks called, isArray:", Array.isArray(mcpResponse));
+  
   // Only parse from array format (MCP messages)
   if (!Array.isArray(mcpResponse)) {
+    console.debug("Not an array, returning null");
     return null;
   }
+  
+  console.debug("Processing", mcpResponse.length, "messages");
   
   // Iterate messages from last to first
   for (let i = mcpResponse.length - 1; i >= 0; i--) {
     const message = mcpResponse[i];
     
     if (!message || !Array.isArray(message.content)) {
+      console.debug(`Message ${i}: no content array`);
       continue;
     }
+    
+    console.debug(`Message ${i}: has ${message.content.length} content blocks`);
     
     // Iterate blocks from last to first
     for (let j = message.content.length - 1; j >= 0; j--) {
       const block = message.content[j];
       
-      if (!block || block.type !== 'text') {
+      if (!block) {
+        console.debug(`Block ${j}: null/undefined`);
+        continue;
+      }
+      
+      console.debug(`Block ${j}: type=${block.type}`);
+      
+      if (block.type !== 'text') {
         continue;
       }
       
       if (typeof block.text === 'string') {
+        console.debug(`Block ${j}: text length=${block.text.length}`);
         const payload = parseCandidateReport(block.text);
         if (payload) {
+          console.debug("Found valid payload in text block");
           return payload;
         }
       }
     }
   }
   
+  console.debug("No valid payload found in any text block");
   return null;
 }
 
@@ -253,6 +282,8 @@ function Send_to_Mcp(data) {
       
       // Extract MCP response
       let mcpResponseData = receiveddata.data?.result;
+      
+      console.debug("MCP response data:", mcpResponseData);
       
       // For display in chat history, extract text from response
       let displayContent = "";
