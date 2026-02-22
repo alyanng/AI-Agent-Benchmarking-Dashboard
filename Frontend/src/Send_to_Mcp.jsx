@@ -3,131 +3,127 @@ import React, { useState } from "react";
 import codefixer from "../assets/codefixer.jpeg";
 import ReactMarkdown from "react-markdown";
 
-// Helper: Parse JSON from a string that may have markdown fences or unicode escapes
-function parseJsonFromMaybeWrappedString(s) {
-  if (!s || typeof s !== 'string') {
-    throw new Error("Input is not a valid string");
+// Helper: Parse and validate JSON from a text string that may contain wrappers
+function parseCandidateReport(text) {
+  if (!text || typeof text !== 'string') {
+    return null;
   }
   
-  let cleaned = s.trim();
+  let s = text.trim();
   
-  // Remove markdown code fences if present
-  // Handle ```json ... ``` or ``` ... ```
-  cleaned = cleaned.replace(/^```json\s*\n?/i, '').replace(/^```\s*\n?/, '');
-  cleaned = cleaned.replace(/\n?```\s*$/, '');
-  cleaned = cleaned.trim();
-  
-  // Decode unicode escapes like \u0022 or \u0060
-  // Only if they appear as literal escaped sequences (not already decoded)
-  if (cleaned.includes('\\u00') || cleaned.includes('\\u00')) {
+  // Step 2: Decode unicode escapes if present
+  // Check for patterns like \u0022 or \\u0022
+  if (s.includes('\\u00') || /\\u[0-9a-fA-F]{4}/.test(s)) {
     try {
-      // Use JSON.parse on a quoted string to decode unicode escapes
-      cleaned = JSON.parse('"' + cleaned.replace(/"/g, '\\"') + '"');
-    } catch (decodeErr) {
-      // If decode fails, continue with original cleaned string
-      console.debug("Unicode decode skipped:", decodeErr.message);
+      // Decode by wrapping in quotes and parsing (handles escaped sequences)
+      // First replace escaped backslashes to avoid double-decode
+      const decoded = s.replace(/\\\\u/g, '\\u');
+      // Use a safe decode approach
+      s = decoded.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
+        return String.fromCharCode(parseInt(hex, 16));
+      });
+    } catch (err) {
+      // If decode fails, continue with original
     }
   }
   
-  // Try parsing the cleaned string
-  try {
-    return JSON.parse(cleaned);
-  } catch (parseErr) {
-    // If parse fails, try to extract content between first { and last }
-    const firstBrace = cleaned.indexOf('{');
-    const lastBrace = cleaned.lastIndexOf('}');
-    
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-      const extracted = cleaned.substring(firstBrace, lastBrace + 1);
-      try {
-        return JSON.parse(extracted);
-      } catch (extractErr) {
-        throw new Error("Failed to parse JSON after extraction: " + extractErr.message);
-      }
+  // Step 3: Strip wrappers
+  // Remove markdown fences
+  s = s.replace(/^```json\s*\n?/i, '').replace(/^```\s*\n?/, '');
+  s = s.replace(/\n?```\s*$/, '');
+  s = s.trim();
+  
+  // Remove <artifact> tags if present
+  const artifactStart = s.indexOf('<artifact');
+  if (artifactStart !== -1) {
+    const contentStart = s.indexOf('>', artifactStart);
+    const artifactEnd = s.indexOf('</artifact>');
+    if (contentStart !== -1 && artifactEnd !== -1 && artifactEnd > contentStart) {
+      s = s.substring(contentStart + 1, artifactEnd).trim();
     }
-    
-    throw new Error("Failed to parse JSON: " + parseErr.message);
   }
+  
+  // Step 4: Extract JSON substring between first { and last }
+  const firstBrace = s.indexOf('{');
+  const lastBrace = s.lastIndexOf('}');
+  
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    return null;
+  }
+  
+  const jsonStr = s.substring(firstBrace, lastBrace + 1);
+  
+  // Step 5: Parse JSON
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch (err) {
+    return null;
+  }
+  
+  // Step 6: Validate schema minimally
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return null;
+  }
+  
+  // Must contain project_name (string)
+  if (!parsed.project_name || typeof parsed.project_name !== 'string') {
+    return null;
+  }
+  
+  // Must contain summary (object)
+  if (!parsed.summary || typeof parsed.summary !== 'object') {
+    return null;
+  }
+  
+  // Must contain errors (array) OR at least one required numeric field
+  const hasErrors = Array.isArray(parsed.errors);
+  const hasNumericField = 
+    typeof parsed.number_of_fixes === 'number' ||
+    typeof parsed.total_time_spent_minutes === 'number' ||
+    typeof parsed.number_of_errors_from_raygun === 'number';
+  
+  if (!hasErrors && !hasNumericField) {
+    return null;
+  }
+  
+  // Step 7: Return valid object
+  return parsed;
 }
 
-// Main MCP response extractor: handles both old and new formats
-function extractMcpJsonPayload(mcpResponse) {
-  console.debug("extractMcpJsonPayload called with:", mcpResponse);
-  
-  // A) If response is already a plain object with expected fields, return it
-  if (mcpResponse && typeof mcpResponse === 'object' && !Array.isArray(mcpResponse)) {
-    if (mcpResponse.project_name || mcpResponse.errors || mcpResponse.summary) {
-      console.debug("Response is already a valid payload object");
-      return mcpResponse;
-    }
+// Main extractor: scan MCP response text blocks for report JSON
+function extractReportJsonFromTextBlocks(mcpResponse) {
+  // Only parse from array format (MCP messages)
+  if (!Array.isArray(mcpResponse)) {
+    return null;
   }
   
-  // B) If response is a string that looks like JSON, parse and return it
-  if (typeof mcpResponse === 'string') {
-    console.debug("Response is a string, attempting to parse");
-    try {
-      const parsed = parseJsonFromMaybeWrappedString(mcpResponse);
-      if (parsed && typeof parsed === 'object') {
-        return parsed;
-      }
-    } catch (err) {
-      console.debug("String parsing failed:", err.message);
-    }
-  }
-  
-  // C) If response is an array (new MCP messages format)
-  if (Array.isArray(mcpResponse)) {
-    console.debug("Response is MCP messages array, extracting from content blocks");
+  // Iterate messages from last to first
+  for (let i = mcpResponse.length - 1; i >= 0; i--) {
+    const message = mcpResponse[i];
     
-    // Iterate messages from LAST to FIRST (newest first)
-    for (let i = mcpResponse.length - 1; i >= 0; i--) {
-      const message = mcpResponse[i];
+    if (!message || !Array.isArray(message.content)) {
+      continue;
+    }
+    
+    // Iterate blocks from last to first
+    for (let j = message.content.length - 1; j >= 0; j--) {
+      const block = message.content[j];
       
-      if (!message || !message.content || !Array.isArray(message.content)) {
+      if (!block || block.type !== 'text') {
         continue;
       }
       
-      // Iterate content blocks from LAST to FIRST
-      for (let j = message.content.length - 1; j >= 0; j--) {
-        const block = message.content[j];
-        
-        if (!block || !block.type) {
-          continue;
-        }
-        
-        // Priority 1: tool_result blocks
-        if (block.type === 'tool_result' && block.content && typeof block.content === 'string') {
-          console.debug("Found tool_result block, attempting to parse");
-          try {
-            const parsed = parseJsonFromMaybeWrappedString(block.content);
-            if (parsed && typeof parsed === 'object') {
-              console.debug("Successfully parsed JSON from tool_result");
-              return parsed;
-            }
-          } catch (err) {
-            console.debug("tool_result parse failed:", err.message);
-          }
-        }
-        
-        // Priority 2: text blocks
-        if (block.type === 'text' && block.text && typeof block.text === 'string') {
-          console.debug("Found text block, attempting to parse");
-          try {
-            const parsed = parseJsonFromMaybeWrappedString(block.text);
-            if (parsed && typeof parsed === 'object') {
-              console.debug("Successfully parsed JSON from text block");
-              return parsed;
-            }
-          } catch (err) {
-            console.debug("text block parse failed:", err.message);
-          }
+      if (typeof block.text === 'string') {
+        const payload = parseCandidateReport(block.text);
+        if (payload) {
+          return payload;
         }
       }
     }
   }
   
-  // If we reach here, no valid JSON was found
-  throw new Error("Could not extract JSON payload from MCP response");
+  return null;
 }
 
 // Utility function to extract JSON from AI response text (legacy - kept for backward compatibility)
@@ -255,10 +251,10 @@ function Send_to_Mcp(data) {
       console.log("Received data from AI:", receiveddata);
       setStatus("Message sent successfully..");
       
-      // Extract MCP response - support both old and new formats
+      // Extract MCP response
       let mcpResponseData = receiveddata.data?.result;
       
-      // For display in chat history, try to get text content
+      // For display in chat history, extract text from response
       let displayContent = "";
       if (mcpResponseData && Array.isArray(mcpResponseData)) {
         // New MCP format: extract text from last message for display
@@ -269,10 +265,6 @@ function Send_to_Mcp(data) {
               const block = msg.content[j];
               if (block.type === 'text' && block.text) {
                 displayContent = block.text;
-                break;
-              }
-              if (block.type === 'tool_result' && block.content) {
-                displayContent = block.content;
                 break;
               }
             }
@@ -291,23 +283,23 @@ function Send_to_Mcp(data) {
 
       setChatHistory((prev) => [...prev, aiMessage]);
 
-      // Extract JSON payload using new MCP-aware extractor
-      try {
-        const parsedData = extractMcpJsonPayload(mcpResponseData);
-        console.log("Parsed JSON data:", parsedData);
+      // Extract report JSON from text blocks
+      const payload = extractReportJsonFromTextBlocks(mcpResponseData);
+      
+      if (payload) {
+        console.debug("Parsed report JSON:", payload);
         
-        if (validateDebugReport(parsedData)) {
+        if (validateDebugReport(payload)) {
           console.log("✅ Valid debug report detected");
-          setDetectedReport(parsedData);
+          setDetectedReport(payload);
           setShowSaveButton(true);
           setSaveStatus("✅ Debug report detected and ready to save");
         } else {
           console.log("❌ JSON validation failed");
           setSaveStatus("⚠️ JSON detected but validation failed - check console for details");
         }
-      } catch (extractErr) {
-        console.debug("No valid JSON payload found:", extractErr.message);
-        // Not an error - just means no report was generated
+      } else {
+        console.debug("No valid JSON payload found in text blocks");
         setSaveStatus("");
       }
 
