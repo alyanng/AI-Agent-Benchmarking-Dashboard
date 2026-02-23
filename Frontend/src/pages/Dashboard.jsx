@@ -82,7 +82,7 @@ const Dashboard = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [projectId]);
 
   
   const sharedMaxYRaw = Math.max(
@@ -196,9 +196,9 @@ function ChartAreaCompareModels() {
       setLoading(true);
       setError(null);
       try {
-        // TODO: change project_id as needed
-        const projectId = 2;
-        const limit = 50;
+  const { projectId } = useParams();
+  const { projectId } = useParams();
+  const { projectId } = useParams();
 
         const res = await fetch(
           `http://localhost:8000/api/results/compare_ai_models?project_id=${projectId}&limit=${limit}`
@@ -263,7 +263,7 @@ function ChartAreaCompareModels() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [projectId]);
 
   if (loading) {
     return (
