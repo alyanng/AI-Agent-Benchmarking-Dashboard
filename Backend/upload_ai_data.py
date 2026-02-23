@@ -162,7 +162,8 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
     )
 
     errors = parsed_data.get("errors", [])
-    inserted = save_error_records(errors, project_id="1", config_id=config_id)
+    # BUG FIX: Use actual project_id instead of hardcoded "1"
+    inserted = save_error_records(errors, project_id=str(project_id), config_id=config_id)
 
 
 
