@@ -110,7 +110,7 @@ const Dashboard = () => {
           </div>
 
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
-            <ChartAreaCompareModels />
+            <ChartAreaCompareModels projectId={projectId} />
           </div>
 
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
@@ -184,7 +184,7 @@ function HighQualityErrorsBarChart({ data, loading, error, maxY }) {
 }
 
 // ChartAreaCompareModels kept inside this file per requirement (no separate file)
-function ChartAreaCompareModels() {
+function ChartAreaCompareModels({ projectId }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -196,8 +196,7 @@ function ChartAreaCompareModels() {
       setLoading(true);
       setError(null);
       try {
-        // TODO: change project_id as needed
-        const projectId = 2;
+        // FIXED: Use projectId from props instead of hardcoded value
         const limit = 50;
 
         const res = await fetch(
@@ -263,7 +262,7 @@ function ChartAreaCompareModels() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [projectId]);
 
   if (loading) {
     return (
@@ -347,7 +346,7 @@ function Stability() {
 
 function Accuracy(){
   
- const { projectId } = useParams()
+const { projectId } = useParams()
 // const projectId = 2;
     const [configurations, setConfigurations] = useState([])
     const navigate = useNavigate()
