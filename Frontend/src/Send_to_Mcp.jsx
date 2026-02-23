@@ -15,7 +15,7 @@ function parseCandidateReport(text) {
   console.debug("📝 parseCandidateReport input (first 300 chars):");
   console.debug(s.substring(0, 300));
   
-  // Step 2: Decode unicode escapes if they appear as literal text (e.g., "\u0022" as a string)
+  // Step 2: Decode unicode escapes if they appear as literal text (e.g., "\\"" as a string)
   // This happens when the response is double-encoded
   if (s.includes('\\u00') || s.includes('\\u')) {
     console.debug("🔧 Detected unicode escapes, decoding...");
@@ -264,23 +264,6 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
   return null;
 }
 
-// Utility function to extract JSON from AI response text (legacy - kept for backward compatibility)
-function extractJsonFromAiResponse(aiText) {
-  // Method 1: Extract from ```json code block
-  const jsonBlockMatch = aiText.match(/```json\s*\n([\s\S]*?)\n```/);
-  if (jsonBlockMatch) {
-    return jsonBlockMatch[1];
-  }
-  
-  // Method 2: Extract from <artifact> tags
-  const artifactMatch = aiText.match(/<artifact[^>]*>([\s\S]*?)<\/artifact>/);
-  if (artifactMatch) {
-    return artifactMatch[1];
-  }
-  
-  return null;
-}
-
 // Utility function to validate debug report JSON structure
 function validateDebugReport(data) {
   console.log("Validating debug report:", data);
@@ -345,7 +328,7 @@ function validateDebugReport(data) {
   return true;
 }
 
-function Send_to_Mcp(data) {
+function Send_to_Mcp() {
   const [prompt, setPrompt] = useState(null);
   const [status, setStatus] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
@@ -415,7 +398,7 @@ function Send_to_Mcp(data) {
             console.log("🔍 First 100 chars:", textContent.substring(0, 100));
             
             // Check if text starts with [{ or [" (stringified array)
-            if (textContent.startsWith('[{') || textContent.startsWith('[\"')) {
+            if (textContent.startsWith('[{') || textContent.startsWith('["')) {
               console.log("🎯 DETECTED: content[0].text is stringified JSON array!");
               try {
                 const parsedInner = JSON.parse(textContent);
