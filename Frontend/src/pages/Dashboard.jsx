@@ -185,6 +185,7 @@ function HighQualityErrorsBarChart({ data, loading, error, maxY }) {
 
 // ChartAreaCompareModels kept inside this file per requirement (no separate file)
 function ChartAreaCompareModels() {
+  const { projectId } = useParams();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -196,8 +197,6 @@ function ChartAreaCompareModels() {
       setLoading(true);
       setError(null);
       try {
-        // TODO: change project_id as needed
-        const projectId = 2;
         const limit = 50;
 
         const res = await fetch(
@@ -263,7 +262,7 @@ function ChartAreaCompareModels() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [projectId]);
 
   if (loading) {
     return (
@@ -348,7 +347,6 @@ function Stability() {
 function Accuracy(){
   
  const { projectId } = useParams()
-// const projectId = 2;
     const [configurations, setConfigurations] = useState([])
     const navigate = useNavigate()
     const [loading, setLoading] = useState(true)
@@ -381,7 +379,6 @@ function Accuracy(){
 
 function Fixes() {
    const { projectId } = useParams();
-  // const projectId = 2;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -391,7 +388,6 @@ function Fixes() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // CHANGED: fetch all prompts for the project
         const res = await fetch(
           `${API_BASE_URL}/get_performance_data?project_id=${projectId}`
         );
