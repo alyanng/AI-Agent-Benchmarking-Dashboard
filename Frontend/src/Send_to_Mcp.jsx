@@ -7,24 +7,22 @@ import ReactMarkdown from "react-markdown";
 function extractAllTextFromResponse(obj, textBlocks = []) {
   if (!obj) return textBlocks;
   
+  // Don't return early - continue collecting
   if (typeof obj === 'string' && obj.trim().length > 0) {
     textBlocks.push(obj);
-    return textBlocks;
+    // Don't return here - continue checking other properties
   }
   
   if (Array.isArray(obj)) {
     for (const item of obj) {
       extractAllTextFromResponse(item, textBlocks);
     }
-    return textBlocks;
-  }
-  
-  if (typeof obj === 'object') {
+  } else if (typeof obj === 'object') {
     // Check common text properties first
-    if (obj.text && typeof obj.text === 'string') {
+    if (obj.text && typeof obj.text === 'string' && !textBlocks.includes(obj.text)) {
       textBlocks.push(obj.text);
     }
-    if (obj.content && typeof obj.content === 'string') {
+    if (obj.content && typeof obj.content === 'string' && !textBlocks.includes(obj.content)) {
       textBlocks.push(obj.content);
     }
     
@@ -151,7 +149,7 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
           typeof mcpResponse.content[0].text === 'string') {
         
         const textContent = mcpResponse.content[0].text.trim();
-        console.log("🔍 First text:", textContent.substring(0, 100));
+        console.log("🔍 First text preview:", textContent.substring(0, 100));
         
         // If starts with [{ it's a stringified array
         if (textContent.startsWith('[{') || textContent.startsWith('[\"')) {
@@ -185,7 +183,7 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
   
   console.log(`✅ Processing ${mcpResponse.length} messages`);
   
-  // Iterate ALL messages and ALL blocks - don't stop at first
+  // Iterate ALL messages and ALL blocks
   for (let i = 0; i < mcpResponse.length; i++) {
     const message = mcpResponse[i];
     
@@ -204,7 +202,6 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
       }
       
       console.log(`  📄 Block ${j}: text length ${block.text.length}`);
-      console.log(`  Preview: ${block.text.substring(0, 150)}`);
       
       const payload = parseCandidateReport(block.text);
       
@@ -219,28 +216,10 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
   return null;
 }
 
-// Utility function to extract JSON from AI response text (legacy - kept for backward compatibility)
-function extractJsonFromAiResponse(aiText) {
-  // Method 1: Extract from ```json code block
-  const jsonBlockMatch = aiText.match(/```json\s*\n([\s\S]*?)\n```/);
-  if (jsonBlockMatch) {
-    return jsonBlockMatch[1];
-  }
-  
-  // Method 2: Extract from <artifact> tags
-  const artifactMatch = aiText.match(/<artifact[^>]*>([\s\S]*?)<\/artifact>/);
-  if (artifactMatch) {
-    return artifactMatch[1];
-  }
-  
-  return null;
-}
-
 // Utility function to validate debug report JSON structure
 function validateDebugReport(data) {
   console.log("Validating debug report:", data);
   
-  // Check required fields
   if (!data.project_name) {
     console.log("Validation failed: missing project_name");
     return false;
@@ -251,19 +230,16 @@ function validateDebugReport(data) {
     return false;
   }
   
-  // Check errors is an array
   if (!Array.isArray(data.errors)) {
     console.log("Validation failed: errors is not an array");
     return false;
   }
   
-  // Check array is not empty
   if (data.errors.length === 0) {
     console.log("Validation failed: errors array is empty");
     return false;
   }
   
-  // Check each error object has required fields
   for (let i = 0; i < data.errors.length; i++) {
     const error = data.errors[i];
     if (!error.error_id) {
@@ -280,7 +256,6 @@ function validateDebugReport(data) {
     }
   }
   
-  // Check numeric fields
   if (typeof data.number_of_fixes !== 'number') {
     console.log("Validation failed: number_of_fixes is not a number");
     return false;
@@ -304,8 +279,6 @@ function Send_to_Mcp(data) {
   const [prompt, setPrompt] = useState(null);
   const [status, setStatus] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
-  
-  // New state for JSON report detection and saving
   const [detectedReport, setDetectedReport] = useState(null);
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
@@ -323,7 +296,6 @@ function Send_to_Mcp(data) {
 
     setStatus("Sending..");
     const userMessage = { role: "user", content: prompt };
-
     setChatHistory((prev) => [...prev, userMessage]);
 
     try {
@@ -340,33 +312,22 @@ function Send_to_Mcp(data) {
       );
 
       var receiveddata = await response.json();
-
-      console.log("🔍 Full response:", receiveddata);
+      console.log("🔍 Received response:", receiveddata);
       
       setStatus("Message sent successfully..");
       
-      // Extract MCP response
       let mcpResponseData = receiveddata.data?.result;
-      
-      console.log("🔍 mcpResponseData type:", typeof mcpResponseData);
       console.log("🔍 mcpResponseData:", mcpResponseData);
       
-      // ROBUST TEXT EXTRACTION - try everything
-      let allTextBlocks = [];
-      
-      // Method 1: Use recursive extractor to find ALL text
-      const extractedTexts = extractAllTextFromResponse(mcpResponseData);
-      console.log("🔍 Recursive extraction found", extractedTexts.length, "text blocks");
-      allTextBlocks = extractedTexts;
-      
-      // Method 2: Also try structured extraction for compatibility
+      // STEP 1: First parse stringified arrays (prioritize structured extraction)
       let messagesArray = null;
       
       if (Array.isArray(mcpResponseData)) {
+        console.log("✅ Direct array format");
         messagesArray = mcpResponseData;
       } else if (mcpResponseData && typeof mcpResponseData === 'object' && mcpResponseData.content) {
         if (Array.isArray(mcpResponseData.content)) {
-          // Check if content[0].text is stringified array
+          // Check if content[0].text contains stringified JSON array
           if (mcpResponseData.content.length > 0 && 
               mcpResponseData.content[0].type === 'text' && 
               typeof mcpResponseData.content[0].text === 'string') {
@@ -374,13 +335,15 @@ function Send_to_Mcp(data) {
             const textContent = mcpResponseData.content[0].text.trim();
             
             if (textContent.startsWith('[{') || textContent.startsWith('[\"')) {
-              console.log("🎯 Parsing stringified array");
+              console.log("🎯 Stringified array detected, parsing...");
               try {
                 const parsedInner = JSON.parse(textContent);
                 if (Array.isArray(parsedInner)) {
+                  console.log("✅ Parsed stringified array successfully");
                   messagesArray = parsedInner;
                 }
               } catch (parseErr) {
+                console.log("⚠️ Parse failed, treating content as messages");
                 messagesArray = mcpResponseData.content;
               }
             } else {
@@ -392,22 +355,30 @@ function Send_to_Mcp(data) {
         }
       }
       
-      // Extract more text from structured messages
+      // STEP 2: Extract all text blocks from parsed structure
+      let allTextBlocks = [];
+      
       if (messagesArray && Array.isArray(messagesArray)) {
+        console.log("🔍 Extracting text from", messagesArray.length, "messages");
+        
         for (let i = 0; i < messagesArray.length; i++) {
           const msg = messagesArray[i];
           if (msg && msg.content && Array.isArray(msg.content)) {
             for (let j = 0; j < msg.content.length; j++) {
               const block = msg.content[j];
+              
+              // Extract from text blocks
               if (block && block.type === 'text' && block.text && typeof block.text === 'string') {
-                // Only add if not already in allTextBlocks
                 if (!allTextBlocks.includes(block.text)) {
+                  console.log(`  ✅ Message ${i}, Block ${j}: text (${block.text.length} chars)`);
                   allTextBlocks.push(block.text);
                 }
               }
-              // Also check tool_result blocks
+              
+              // Also extract from tool_result blocks
               if (block && block.type === 'tool_result' && block.content && typeof block.content === 'string') {
                 if (!allTextBlocks.includes(block.content)) {
+                  console.log(`  ✅ Message ${i}, Block ${j}: tool_result (${block.content.length} chars)`);
                   allTextBlocks.push(block.content);
                 }
               }
@@ -416,10 +387,28 @@ function Send_to_Mcp(data) {
         }
       }
       
+      // STEP 3: Fallback - use recursive extractor only if structured extraction failed
+      if (allTextBlocks.length === 0) {
+        console.log("🔄 No text from structured extraction, trying recursive");
+        const recursiveTexts = extractAllTextFromResponse(mcpResponseData);
+        console.log("🔍 Recursive found", recursiveTexts.length, "text items");
+        
+        // Filter out stringified JSON arrays (they're not display text)
+        for (const text of recursiveTexts) {
+          const trimmed = text.trim();
+          // Skip if it's a stringified array or object
+          if (!trimmed.startsWith('[{') && !trimmed.startsWith('{"') && trimmed.length > 0) {
+            if (!allTextBlocks.includes(text)) {
+              allTextBlocks.push(text);
+            }
+          }
+        }
+      }
+      
       // Concatenate all text for display
       const displayContent = allTextBlocks.join('\n\n');
-      console.log("🔍 Total text blocks found:", allTextBlocks.length);
-      console.log("🔍 Final display content length:", displayContent.length);
+      console.log("🔍 Total text blocks:", allTextBlocks.length);
+      console.log("🔍 Final display length:", displayContent.length);
       
       const aiMessage = {
         role: "AI",
@@ -428,36 +417,31 @@ function Send_to_Mcp(data) {
 
       setChatHistory((prev) => [...prev, aiMessage]);
 
-      // Extract report JSON - try from messagesArray first
-      console.log("\n🚀 Extracting JSON...");
+      // Extract JSON report
+      console.log("\n🚀 Extracting JSON report...");
       let payload = extractReportJsonFromTextBlocks(messagesArray || mcpResponseData);
       
-      console.log("🚀 Payload result:", payload);
-      
-      // FALLBACK: Try parsing concatenated displayContent
+      // Fallback: Try parsing concatenated displayContent
       if (!payload && displayContent) {
         console.log("🔄 Fallback: parsing displayContent");
         payload = parseCandidateReport(displayContent);
       }
       
-      // SECOND FALLBACK: Try each text block individually
+      // Second fallback: Try each text block individually
       if (!payload && allTextBlocks.length > 0) {
-        console.log("🔄 Second fallback: trying each text block individually");
+        console.log("🔄 Trying each text block individually");
         for (let i = 0; i < allTextBlocks.length; i++) {
-          console.log(`🔄 Trying block ${i}...`);
           payload = parseCandidateReport(allTextBlocks[i]);
           if (payload) {
-            console.log(`✅ Found JSON in block ${i}!`);
+            console.log(`✅ Found JSON in block ${i}`);
             break;
           }
         }
       }
       
       if (payload) {
-        console.log("✅ Payload found, validating...");
-        
         if (validateDebugReport(payload)) {
-          console.log("🎉 VALID DEBUG REPORT DETECTED!");
+          console.log("🎉 VALID DEBUG REPORT!");
           setDetectedReport(payload);
           setShowSaveButton(true);
           setSaveStatus("✅ Debug report detected and ready to save");
@@ -466,7 +450,6 @@ function Send_to_Mcp(data) {
           setSaveStatus("⚠️ JSON detected but validation failed");
         }
       } else {
-        console.log("❌ No valid JSON payload found");
         setSaveStatus("");
       }
 
@@ -477,7 +460,6 @@ function Send_to_Mcp(data) {
     }
   }
 
-  // Function to save detected JSON report to backend
   async function handleSaveReport() {
     if (!detectedReport) {
       alert("No report to save");
@@ -541,7 +523,6 @@ function Send_to_Mcp(data) {
         ))}
       </div>
 
-      {/* Save Report Section - shown when JSON is detected */}
       {showSaveButton && (
         <div className="save-report-area" style={{
           margin: "15px 0",
