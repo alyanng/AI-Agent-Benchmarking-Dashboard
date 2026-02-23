@@ -15,6 +15,7 @@ import {
 import CombinedGraph from "../combined";
 import StabilityGraph from "../stability";
 import MetricChart from "../MetricChart";
+import NavBar from "../NavBar";
 
 
 /**
@@ -37,40 +38,37 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
       try {
-        const [res1, res2] = await Promise.all([
-          fetch('http://localhost:8000/api/results/detected_errors?limit=50'),
-          fetch('http://localhost:8000/api/results/high_quality_errors?limit=50'),
-        ]);
+        const response = await fetch(`http://localhost:8000/api/results/detected_errors?projectid=${projectId}`)
+        const response2 = await fetch(`http://localhost:8000/api/results/high_quality_errors?projectid=${projectId}`)
+        // if (!response) throw new Error(`Detected errors HTTP ${res1.status}`);
+        // if (!res2.ok) throw new Error(`High quality errors HTTP ${res2.status}`);
 
-        if (!res1.ok) throw new Error(`Detected errors HTTP ${res1.status}`);
-        if (!res2.ok) throw new Error(`High quality errors HTTP ${res2.status}`);
+        const data = await response.json()
+        const data2 = await response2.json()
 
-        const [json1, json2] = await Promise.all([res1.json(), res2.json()]);
+        // const d1 = Array.isArray(json1)
+        //   ? json1.map((r) => ({
+        //       x: r && typeof r.x !== 'undefined' ? r.x : null,
+        //       detected_errors:
+        //         r && r.detected_errors != null && !Number.isNaN(Number(r.detected_errors))
+        //           ? Number(r.detected_errors)
+        //           : 0,
+        //     }))
+        //   : [];
 
-        const d1 = Array.isArray(json1)
-          ? json1.map((r) => ({
-              x: r && typeof r.x !== 'undefined' ? r.x : null,
-              detected_errors:
-                r && r.detected_errors != null && !Number.isNaN(Number(r.detected_errors))
-                  ? Number(r.detected_errors)
-                  : 0,
-            }))
-          : [];
+        // const d2 = Array.isArray(json2)
+        //   ? json2.map((r) => ({
+        //       x: r && typeof r.x !== 'undefined' ? r.x : null,
+        //       high_quality_errors:
+        //         r && r.high_quality_errors != null && !Number.isNaN(Number(r.high_quality_errors))
+        //           ? Number(r.high_quality_errors)
+        //           : 0,
+        //     }))
+        //   : [];
 
-        const d2 = Array.isArray(json2)
-          ? json2.map((r) => ({
-              x: r && typeof r.x !== 'undefined' ? r.x : null,
-              high_quality_errors:
-                r && r.high_quality_errors != null && !Number.isNaN(Number(r.high_quality_errors))
-                  ? Number(r.high_quality_errors)
-                  : 0,
-            }))
-          : [];
+          setDetectedData(data);
+          setHighData(data2);
 
-        if (mounted) {
-          setDetectedData(d1);
-          setHighData(d2);
-        }
       } catch (err) {
         if (mounted) setError(err.message || String(err));
       } finally {
@@ -82,19 +80,21 @@ const Dashboard = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [projectId]);
 
   
-  const sharedMaxYRaw = Math.max(
-    0,
-    ...detectedData.map((d) => d.detected_errors ?? 0),
-    ...highData.map((d) => d.high_quality_errors ?? 0)
-  );
+  // const sharedMaxYRaw = Math.max(
+  //   0,
+  //   ...detectedData.map((d) => d.errors ?? 0),
+  //   ...highData.map((d) => d.high_quality_errors ?? 0)
+  // );
 
   
-  const sharedMaxY = Math.ceil(sharedMaxYRaw / 4) * 4 || 0;
+  // const sharedMaxY = Math.ceil(sharedMaxYRaw / 4) * 4 || 0;
 
   return (
+    <>
+      <NavBar />
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>Results Dashboard</h1>
@@ -104,9 +104,9 @@ const Dashboard = () => {
       <div className="dashboard-content">
         <div className="chart-section">
           <div className="chart-wrapper" style={{ width: '100%', height: 300 }}>
-            <ChartArea data={detectedData} loading={loading} error={error} maxY={sharedMaxY} />
+            <ChartArea data={detectedData} loading={loading} error={error}/>
           
-            <HighQualityErrorsBarChart data={highData} loading={loading} error={error} maxY={sharedMaxY} />
+            <HighQualityErrorsBarChart data={highData} loading={loading} error={error}/>
           </div>
 
           <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
@@ -131,11 +131,12 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
 // ChartArea component kept inside this file per requirement (no separate file)
-function ChartArea({ data, loading, error, maxY }) {
+function ChartArea({ data, loading, error}) {
   if (loading) {
     return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>Loading chart data...</div>;
   }
@@ -150,16 +151,16 @@ function ChartArea({ data, loading, error, maxY }) {
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="x" label={{ value: 'Result', position: 'insideBottomRight', offset: -10 }} />
-        <YAxis domain={[0, maxY]} label={{ value: 'Detected Errors', angle: -90, position: 'insideLeft' }} />
-        <Tooltip formatter={(value) => `${value}`} labelFormatter={(label) => `Result #${label}`} />
-        <Bar dataKey="detected_errors" fill="#3b82f6" />
+        <XAxis dataKey="configid" label={{ value: 'System prompt', position: 'insideBottomRight', offset: -10 }} />
+        <YAxis label={{ value: 'Detected Errors', angle: -90, position: 'insideLeft' }} />
+        <Tooltip formatter={(value) => `${value.toFixed(2)}}`} labelFormatter={(label) => `System prompt #${label}`} />
+        <Bar dataKey="error" fill="#3b82f6" />
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-function HighQualityErrorsBarChart({ data, loading, error, maxY }) {
+function HighQualityErrorsBarChart({ data, loading, error}) {
   if (loading) {
     return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>Loading chart data...</div>;
   }
@@ -174,10 +175,10 @@ function HighQualityErrorsBarChart({ data, loading, error, maxY }) {
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="x" label={{ value: 'Result', position: 'insideBottomRight', offset: -10 }} />
-        <YAxis domain={[0, maxY]} label={{ value: 'High Quality Errors', angle: -90, position: 'insideLeft' }} />
-        <Tooltip formatter={(value) => `${value}`} labelFormatter={(label) => `Result #${label}`} />
-        <Bar dataKey="high_quality_errors" fill="#3b82f6" />
+        <XAxis dataKey="configid" label={{ value: 'System prompt', position: 'insideBottomRight', offset: -10 }} />
+        <YAxis label={{ value: 'High Quality Errors', angle: -90, position: 'insideLeft' }} />
+        <Tooltip formatter={(value) => `${value.toFixed(2)}}`} labelFormatter={(label) => `System #${label}`} />
+        <Bar dataKey="high-quality" fill="#3b82f6" />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -185,6 +186,7 @@ function HighQualityErrorsBarChart({ data, loading, error, maxY }) {
 
 // ChartAreaCompareModels kept inside this file per requirement (no separate file)
 function ChartAreaCompareModels() {
+  const { projectId } = useParams(); 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -197,7 +199,7 @@ function ChartAreaCompareModels() {
       setError(null);
       try {
         // TODO: change project_id as needed
-        const projectId = 2;
+        // const projectId = 2;
         const limit = 50;
 
         const res = await fetch(

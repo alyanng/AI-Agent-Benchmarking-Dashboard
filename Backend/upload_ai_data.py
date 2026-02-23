@@ -8,7 +8,6 @@ from datetime import datetime
 
 
 from results_and_configuration_info import insert_configurations
-from results_and_configuration_info import insert_fixes, insert_new_system_prompts
 from store_error_info import save_error_records
 from projects_info import insert_project
 
@@ -176,9 +175,11 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
 
 @router.post("/upload_system_prompt")
 async def upload_system_prompt(projectid: int, prompt: Optional[str] = Form(None)):
-    config = insert_new_system_prompts(projectid, prompt)
+    config_id = insert_configurations(system_prompt= prompt, model="", project_id =projectid)
+    results_id = insert_fixes(0, 0, 0, projectid, config_id)
     return {
         "success": True,
-        "config": config
+        "configid": config_id,
+        "resultid": results_id
     }
 
