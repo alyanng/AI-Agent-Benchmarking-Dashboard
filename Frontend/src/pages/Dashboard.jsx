@@ -82,7 +82,7 @@ const Dashboard = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [projectId]);
 
   
   const sharedMaxYRaw = Math.max(
@@ -185,6 +185,7 @@ function HighQualityErrorsBarChart({ data, loading, error, maxY }) {
 
 // ChartAreaCompareModels kept inside this file per requirement (no separate file)
 function ChartAreaCompareModels() {
+  const { projectId } = useParams(); // BUG FIX: Use projectId from URL params
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -196,8 +197,7 @@ function ChartAreaCompareModels() {
       setLoading(true);
       setError(null);
       try {
-        // TODO: change project_id as needed
-        const projectId = 2;
+        // BUG FIX: Use projectId from URL params instead of hardcoded value
         const limit = 50;
 
         const res = await fetch(
@@ -263,7 +263,7 @@ function ChartAreaCompareModels() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [projectId]); // BUG FIX: Added projectId to dependency array
 
   if (loading) {
     return (
@@ -348,7 +348,6 @@ function Stability() {
 function Accuracy(){
   
  const { projectId } = useParams()
-// const projectId = 2;
     const [configurations, setConfigurations] = useState([])
     const navigate = useNavigate()
     const [loading, setLoading] = useState(true)
@@ -381,7 +380,6 @@ function Accuracy(){
 
 function Fixes() {
    const { projectId } = useParams();
-  // const projectId = 2;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
