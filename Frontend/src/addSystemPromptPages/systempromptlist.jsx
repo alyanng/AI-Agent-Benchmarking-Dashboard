@@ -55,7 +55,7 @@ function SystemPromptList() {
         <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
             <tr>
-              <th>Configuration ID</th>
+              <th>ID</th>
               <th>System Prompt</th>
             </tr>
           </thead>
