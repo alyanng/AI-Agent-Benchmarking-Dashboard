@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
-import { useParams, useNavigate } from 'react-router-dom'; 
+import { useParams } from 'react-router-dom'; 
 import Accuracy_graph from "../Accuracy_graph";
 import {
   ResponsiveContainer,
@@ -40,31 +40,9 @@ const Dashboard = () => {
       try {
         const response = await fetch(`http://localhost:8000/api/results/detected_errors?projectid=${projectId}`)
         const response2 = await fetch(`http://localhost:8000/api/results/high_quality_errors?projectid=${projectId}`)
-        // if (!response) throw new Error(`Detected errors HTTP ${res1.status}`);
-        // if (!res2.ok) throw new Error(`High quality errors HTTP ${res2.status}`);
 
         const data = await response.json()
         const data2 = await response2.json()
-
-        // const d1 = Array.isArray(json1)
-        //   ? json1.map((r) => ({
-        //       x: r && typeof r.x !== 'undefined' ? r.x : null,
-        //       detected_errors:
-        //         r && r.detected_errors != null && !Number.isNaN(Number(r.detected_errors))
-        //           ? Number(r.detected_errors)
-        //           : 0,
-        //     }))
-        //   : [];
-
-        // const d2 = Array.isArray(json2)
-        //   ? json2.map((r) => ({
-        //       x: r && typeof r.x !== 'undefined' ? r.x : null,
-        //       high_quality_errors:
-        //         r && r.high_quality_errors != null && !Number.isNaN(Number(r.high_quality_errors))
-        //           ? Number(r.high_quality_errors)
-        //           : 0,
-        //     }))
-        //   : [];
 
           setDetectedData(data);
           setHighData(data2);
@@ -83,15 +61,6 @@ const Dashboard = () => {
   }, [projectId]);
 
   
-  // const sharedMaxYRaw = Math.max(
-  //   0,
-  //   ...detectedData.map((d) => d.errors ?? 0),
-  //   ...highData.map((d) => d.high_quality_errors ?? 0)
-  // );
-
-  
-  // const sharedMaxY = Math.ceil(sharedMaxYRaw / 4) * 4 || 0;
-
   return (
     <>
       <NavBar />
@@ -188,22 +157,18 @@ function HighQualityErrorsBarChart({ data, loading, error}) {
 function ChartAreaCompareModels() {
   const { projectId } = useParams(); 
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     let mounted = true;
 
     async function fetchData() {
-      setLoading(true);
-      setError(null);
       try {
-        // TODO: change project_id as needed
-        // const projectId = 2;
         const limit = 50;
 
         const res = await fetch(
-          `http://localhost:8000/api/results/compare_ai_models?project_id=${projectId}&limit=${limit}`
+          `${API_BASE_URL}/api/results/compare_ai_models?project_id=${projectId}&limit=${limit}`
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
@@ -254,9 +219,7 @@ function ChartAreaCompareModels() {
 
         if (mounted) setData(aggregated);
       } catch (err) {
-        if (mounted) setError(err.message || String(err));
-      } finally {
-        if (mounted) setLoading(false);
+        console.error('Error fetching compare models:', err);
       }
     }
 
@@ -265,23 +228,7 @@ function ChartAreaCompareModels() {
     return () => {
       mounted = false;
     };
-  }, []);
-
-  if (loading) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>
-        Loading chart data...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', color: 'red', paddingTop: 20 }}>
-        Error loading data: {error}
-      </div>
-    );
-  }
+  }, [API_BASE_URL, projectId]);
 
   if (!data || data.length === 0) {
     return (
@@ -316,7 +263,7 @@ function ChartAreaCompareModels() {
         />
 
         <Tooltip
-          formatter={(value, name, props) => {
+          formatter={(value, name) => {
             if (name === 'total_fixes') return [`${value}`, 'Total Fixes'];
             if (name === 'speed') return [`${value}`, 'Speed (fixes/min)'];
             if (name === 'total_tokens') return [`${value}`, 'Total Tokens'];
@@ -349,12 +296,8 @@ function Stability() {
 
 function Accuracy(){
   
- const { projectId } = useParams()
-// const projectId = 2;
+const { projectId } = useParams()
     const [configurations, setConfigurations] = useState([])
-    const navigate = useNavigate()
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
    
@@ -365,17 +308,14 @@ function Accuracy(){
                     const configResponse = await fetch (`${API_BASE_URL}/get_config_data?project_id=${projectId}`)
                     const configData = await configResponse.json()
                     setConfigurations(configData)
-                    setLoading(false)
 
                 } catch(err) {
                     console.error('Error fetching configurations:', err)
-                    setError(err.message)
-                    setLoading(false)
             }
             }
 
         fetchData()
-    }, [projectId])
+    }, [API_BASE_URL, projectId])
 
     return ( <Accuracy_graph configdata={configurations}/> );
  
@@ -383,10 +323,8 @@ function Accuracy(){
 
 function Fixes() {
    const { projectId } = useParams();
-  // const projectId = 2;
+
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -400,16 +338,14 @@ function Fixes() {
 
         const json = await res.json();
         setData(json);
-        setLoading(false);
       } catch (err) {
         console.error("Failed to fetch performance data:", err);
-        setError(err.message);
-        setLoading(false);
       }
     };
 
     fetchData();
-  }, [projectId]);
+  }, [API_BASE_URL, projectId]);
+  
   return (
     <div>
       <h3>Average Fixed Errors per Prompt</h3>
@@ -421,6 +357,7 @@ function Fixes() {
     </div>
   )
 }
+
 
 
 
