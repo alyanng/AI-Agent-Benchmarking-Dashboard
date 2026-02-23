@@ -10,6 +10,7 @@ from mcp import mcp_router
 from project_routes import router as project_router  # Projects router
 
 from database import get_conn
+import statistics
 
 # -----------------------------------
 # Load environment variables
@@ -61,7 +62,7 @@ app.include_router(mcp_router.router)
 # Endpoint: Get detected errors from results table
 # =============================================
 @app.get("/api/results/detected_errors")
-def get_detected_errors(limit: int = 50):
+def get_detected_errors(projectid:int):
     """
     Fetch detected errors from results table.
     Returns data sorted oldest to newest (reversed from query order).
@@ -72,29 +73,55 @@ def get_detected_errors(limit: int = 50):
         
         # Query results table ordered by result_id DESC
         cur.execute("""
-            SELECT detected_errors
+            SELECT detected_errors, configuration_id
             FROM results
-            ORDER BY results_id DESC
-            LIMIT %s;
-        """, (limit,))
+            WHERE project_id = %s
+            ORDER BY results_id ASC
+        """, (projectid,))
         
         rows = cur.fetchall()
+        data = []
+        for r in rows:
+            data.append({
+                "error":r[0],
+                "configid":r[1],
+            })
+
         cur.close()
         conn.close()
+
+        configs = {}
+        for d in data:
+            error = d.get("error")
+            config = d.get("configid")
+
+            if config not in configs:
+                configs[config] = []
+            configs[config].append(error)
+        
+        averages = []
+        for config, errors in configs.items():
+            error = statistics.mean(errors)
+            averages.append({
+                "configid": config,
+                "error": error
+            })
+
+        
         
         # Reverse to show oldest to newest
-        rows = list(reversed(rows))
+        # rows = list(reversed(rows))
         
         # Format for chart: convert null values to 0, create x-axis index
-        result = [
-            {
-                "x": idx + 1,
-                "detected_errors": safe_int(row[0])
-            }
-            for idx, row in enumerate(rows)
-        ]
+        # result = [
+        #     {
+        #         "x": idx + 1,
+        #         "detected_errors": safe_int(row[0])
+        #     }
+        #     for idx, row in enumerate(rows)
+        # ]
         
-        return result
+        return averages
     except Exception as e:
         print(f"[/api/results/detected-errors] Error: {str(e)}")
         return {"error": str(e)}
@@ -104,7 +131,7 @@ def get_detected_errors(limit: int = 50):
 # Endpoint: Get high quality errors from results table
 # =============================================
 @app.get("/api/results/high_quality_errors")
-def get_high_quality_errors(limit: int = 50):
+def get_high_quality_errors(projectid:int):
     """
     Fetch high quality errors from results table.
     Returns data sorted oldest to newest (reversed from query order).
@@ -115,29 +142,57 @@ def get_high_quality_errors(limit: int = 50):
         
         # Query results table ordered by result_id DESC
         cur.execute("""
-            SELECT high_quality_errors
+            SELECT high_quality_errors, configuration_id
             FROM results
-            ORDER BY results_id DESC
-            LIMIT %s;
-        """, (limit,))
+            WHERE project_id = %s
+            ORDER BY results_id ASC
+        """, (projectid,))
         
         rows = cur.fetchall()
         cur.close()
         conn.close()
+
+        data = []
+        for r in rows:
+            data.append({
+                "error":r[0],
+                "configid":r[1],
+            })
+
+        configs = {}
+        for d in data:
+            error = d.get("error")
+            config = d.get("configid")
+
+            if config not in configs:
+                configs[config] = []
+            configs[config].append(error)
+
+        averages = []
+        for config, errors in configs.items():
+            error = statistics.mean(errors)
+            averages.append({
+                "configid": config,
+                "high-quality": error
+            })
+
+        
+
+
         
         # Reverse to show oldest to newest
-        rows = list(reversed(rows))
+        # rows = list(reversed(rows))
         
         # Format for chart: convert null values to 0, create x-axis index
-        result = [
-            {
-                "x": idx + 1,
-                "high_quality_errors": safe_int(row[0])
-            }
-            for idx, row in enumerate(rows)
-        ]
+        # result = [
+        #     {
+        #         "x": idx + 1,
+        #         "high_quality_errors": safe_int(row[0])
+        #     }
+        #     for idx, row in enumerate(rows)
+        # ]
         
-        return result
+        return averages
     except Exception as e:
         print(f"[/api/results/high_quality_errors] Error: {str(e)}")
         return {"error": str(e)}

@@ -41,7 +41,7 @@ function Configurations() {
       <div style={{ padding: 16 }}>
         {/* Page Header + Agent Performance Button */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h1>Configurations</h1>
+          <h1>System prompts</h1>
 
           {/* CHANGED: simplified - button goes directly to project-level performance */}
           <button
@@ -56,7 +56,7 @@ function Configurations() {
         <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
             <tr>
-              <th>Configuration ID</th>
+              <th>ID</th>
               <th>System Prompt</th>
               <th>Number of Fixes</th>
               <th>Duration</th>

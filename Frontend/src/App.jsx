@@ -3,7 +3,7 @@ import Home from './Home.jsx';
 import Projects from "./Projects.jsx";
 import Configurations from "./configurations.jsx";
 import StabilityGraph from "./stability.jsx";
-import Dashboard from './pages/Dashboard.jsx';
+import Dashboard from './dashboardPage/Dashboard.jsx';
 import DetectedErrorsBarChart from './components/DetectedErrorsBarChart.jsx';
 import CombinedGraph from "./combined.jsx";
 import Errors from "./Errors.jsx";
