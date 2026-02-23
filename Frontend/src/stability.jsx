@@ -27,7 +27,7 @@ export default function StabilityGraph({projectId}) {
                 }
     
             fetchData()
-    }, [projectId])
+    }, [API_BASE_URL, projectId])
 
 
     if (loading) return <div>Loading...</div>
