@@ -3,6 +3,42 @@ import React, { useState } from "react";
 import codefixer from "../assets/codefixer.jpeg";
 import ReactMarkdown from "react-markdown";
 
+// Helper: Recursively extract all text from any nested structure
+function extractAllTextFromResponse(obj, textBlocks = []) {
+  if (!obj) return textBlocks;
+  
+  if (typeof obj === 'string' && obj.trim().length > 0) {
+    textBlocks.push(obj);
+    return textBlocks;
+  }
+  
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      extractAllTextFromResponse(item, textBlocks);
+    }
+    return textBlocks;
+  }
+  
+  if (typeof obj === 'object') {
+    // Check common text properties first
+    if (obj.text && typeof obj.text === 'string') {
+      textBlocks.push(obj.text);
+    }
+    if (obj.content && typeof obj.content === 'string') {
+      textBlocks.push(obj.content);
+    }
+    
+    // Recursively check all other properties
+    for (const key in obj) {
+      if (key !== 'text' && key !== 'content') {
+        extractAllTextFromResponse(obj[key], textBlocks);
+      }
+    }
+  }
+  
+  return textBlocks;
+}
+
 // Helper: Parse and validate JSON from a text string that may contain wrappers
 function parseCandidateReport(text) {
   if (!text || typeof text !== 'string') {
@@ -114,19 +150,19 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
           mcpResponse.content[0].type === 'text' && 
           typeof mcpResponse.content[0].text === 'string') {
         
-        const firstText = mcpResponse.content[0].text.trim();
-        console.log("🔍 First text:", firstText.substring(0, 100));
+        const textContent = mcpResponse.content[0].text.trim();
+        console.log("🔍 First text:", textContent.substring(0, 100));
         
         // If starts with [{ it's a stringified array
-        if (firstText.startsWith('[{') || firstText.startsWith('[\"')) {
+        if (textContent.startsWith('[{') || textContent.startsWith('[\"')) {
           console.log("🎯 Parsing stringified array from content[0].text");
           try {
-            const parsedArray = JSON.parse(firstText);
-            if (Array.isArray(parsedArray)) {
+            const parsedInner = JSON.parse(textContent);
+            if (Array.isArray(parsedInner)) {
               console.log("✅ Parsed nested array");
-              mcpResponse = parsedArray;
+              mcpResponse = parsedInner;
             }
-          } catch (err) {
+          } catch (parseErr) {
             console.log("⚠️ Parse failed, using content array");
             mcpResponse = mcpResponse.content;
           }
@@ -305,21 +341,32 @@ function Send_to_Mcp(data) {
 
       var receiveddata = await response.json();
 
-      console.log("🔍 Received data from AI:", receiveddata);
+      console.log("🔍 Full response:", receiveddata);
       
       setStatus("Message sent successfully..");
       
       // Extract MCP response
       let mcpResponseData = receiveddata.data?.result;
       
-      // Unwrap and extract messages array
+      console.log("🔍 mcpResponseData type:", typeof mcpResponseData);
+      console.log("🔍 mcpResponseData:", mcpResponseData);
+      
+      // ROBUST TEXT EXTRACTION - try everything
+      let allTextBlocks = [];
+      
+      // Method 1: Use recursive extractor to find ALL text
+      const extractedTexts = extractAllTextFromResponse(mcpResponseData);
+      console.log("🔍 Recursive extraction found", extractedTexts.length, "text blocks");
+      allTextBlocks = extractedTexts;
+      
+      // Method 2: Also try structured extraction for compatibility
       let messagesArray = null;
       
       if (Array.isArray(mcpResponseData)) {
         messagesArray = mcpResponseData;
       } else if (mcpResponseData && typeof mcpResponseData === 'object' && mcpResponseData.content) {
         if (Array.isArray(mcpResponseData.content)) {
-          // Check if content[0].text contains stringified JSON array
+          // Check if content[0].text is stringified array
           if (mcpResponseData.content.length > 0 && 
               mcpResponseData.content[0].type === 'text' && 
               typeof mcpResponseData.content[0].text === 'string') {
@@ -327,11 +374,10 @@ function Send_to_Mcp(data) {
             const textContent = mcpResponseData.content[0].text.trim();
             
             if (textContent.startsWith('[{') || textContent.startsWith('[\"')) {
-              console.log("🎯 Parsing stringified array from content[0].text");
+              console.log("🎯 Parsing stringified array");
               try {
                 const parsedInner = JSON.parse(textContent);
                 if (Array.isArray(parsedInner)) {
-                  console.log("✅ Parsed nested array");
                   messagesArray = parsedInner;
                 }
               } catch (parseErr) {
@@ -346,20 +392,24 @@ function Send_to_Mcp(data) {
         }
       }
       
-      // Extract display text - CONCATENATE ALL TEXT BLOCKS
-      let allTextBlocks = [];
-      
+      // Extract more text from structured messages
       if (messagesArray && Array.isArray(messagesArray)) {
-        console.log("🔍 Extracting ALL text from", messagesArray.length, "messages");
-        
         for (let i = 0; i < messagesArray.length; i++) {
           const msg = messagesArray[i];
           if (msg && msg.content && Array.isArray(msg.content)) {
             for (let j = 0; j < msg.content.length; j++) {
               const block = msg.content[j];
-              if (block && block.type === 'text' && block.text) {
-                console.log(`✅ Message ${i}, Block ${j}: text length ${block.text.length}`);
-                allTextBlocks.push(block.text);
+              if (block && block.type === 'text' && block.text && typeof block.text === 'string') {
+                // Only add if not already in allTextBlocks
+                if (!allTextBlocks.includes(block.text)) {
+                  allTextBlocks.push(block.text);
+                }
+              }
+              // Also check tool_result blocks
+              if (block && block.type === 'tool_result' && block.content && typeof block.content === 'string') {
+                if (!allTextBlocks.includes(block.content)) {
+                  allTextBlocks.push(block.content);
+                }
               }
             }
           }
@@ -379,7 +429,7 @@ function Send_to_Mcp(data) {
       setChatHistory((prev) => [...prev, aiMessage]);
 
       // Extract report JSON - try from messagesArray first
-      console.log("\n🚀 Extracting JSON from text blocks...");
+      console.log("\n🚀 Extracting JSON...");
       let payload = extractReportJsonFromTextBlocks(messagesArray || mcpResponseData);
       
       console.log("🚀 Payload result:", payload);
