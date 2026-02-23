@@ -203,9 +203,6 @@ def compare_ai_models(project_id: int, limit: int = 50):
         return {"error": str(e)}
 
 
-
-app.include_router(project_router)
-
 # -----------------------------------
 # Endpoint: list error records
 # -----------------------------------
@@ -250,6 +247,7 @@ def list_errors(configuration_id: int = None):
 @app.get("/get_config_data")
 def get_config_data_test(project_id: int):
     return {"message": f"Received project_id: {project_id}"}
+
 # -----------------------------------
 # Endpoint: get project-level performance data
 # -----------------------------------
