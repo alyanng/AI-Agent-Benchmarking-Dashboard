@@ -30,7 +30,7 @@ export default function ProjectList() {
     }
 
     loadProjects();
-  }, []);
+  }, [API_BASE_URL]);
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
   if (errMsg) return (
@@ -59,7 +59,7 @@ export default function ProjectList() {
             </tr>
           </thead>
           <tbody>
-            {projects.map((p, index) => (
+            {projects.map((p) => (
               <tr key={p.project_id}>
                 <td>{p.project_name}</td>
                 <td>
