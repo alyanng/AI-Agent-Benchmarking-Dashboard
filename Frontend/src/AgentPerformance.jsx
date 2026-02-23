@@ -32,7 +32,7 @@ export default function AgentPerformance() {
     };
 
     fetchData();
-  }, [projectId]);
+  }, [API_BASE_URL, projectId]);
 
   if (loading) return <div>Loading performance data...</div>;
   if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
