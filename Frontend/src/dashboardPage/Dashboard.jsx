@@ -15,6 +15,7 @@ import {
 import CombinedGraph from "../combined";
 import StabilityGraph from "../stability";
 import MetricChart from "../MetricChart";
+import NavBar from "../NavBar";
 
 
 /**
@@ -95,6 +96,8 @@ const Dashboard = () => {
   const sharedMaxY = Math.ceil(sharedMaxYRaw / 4) * 4 || 0;
 
   return (
+    <>
+      <NavBar />
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>Results Dashboard</h1>
@@ -131,6 +134,7 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
