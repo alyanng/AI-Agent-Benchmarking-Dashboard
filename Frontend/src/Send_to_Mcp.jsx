@@ -1,6 +1,7 @@
 import "./Send_to_Mcp.css";
 import React, { useState } from "react";
-import codefixer from "../assets/codefixer.jpeg";
+import codefixerImg from "../assets/codefixer.png";
+import autohiveImg from "../assets/autohive.png";
 import ReactMarkdown from "react-markdown";
 
 // Helper: Parse and validate JSON from a text string that may contain wrappers
@@ -366,7 +367,7 @@ function Send_to_Mcp(data) {
     }
 
     setStatus("Sending..");
-    const userMessage = { role: "user", content: prompt };
+    const userMessage = { role: "You:", content: prompt };
 
     setChatHistory((prev) => [...prev, userMessage]);
 
@@ -459,7 +460,7 @@ function Send_to_Mcp(data) {
       console.log("🔍 Final display content length:", displayContent.length);
       
       const aiMessage = {
-        role: "AI",
+        role: "Github Code Fixer:",
         content: displayContent || "No content available"
       };
 
@@ -547,15 +548,27 @@ function Send_to_Mcp(data) {
     }
   }
 
+  
+
+
   return (
     <div className="sendtomcp">
-      <h3>Github Code Fixer</h3>
-      <img src={codefixer} alt="codefixer"></img>
-      <p>
+        <div className="agentTitle">
+            <img id="autohive" src={autohiveImg} alt="autohive Image" />
+      <h3>Github Code Fixer</h3></div>
+      {/* <img src={codefixer} alt="codefixer"></img> */}
+       {chatHistory.length === 0 && (
+        <div className="images">
+           
+    <img id="codefixer" src={codefixerImg} alt="code fixer Image" />
+   
+  </div>
+    )}
+      {/* <p>
         I help you debug and fix code issues using production error data from
         Raygun and GitHub integration.
         <br /> I analyze errors, create fixes, and submit pull requests.
-      </p>
+      </p> */}
 
       <div className="result_area">
         {chatHistory.map((message, i) => (
@@ -596,13 +609,16 @@ function Send_to_Mcp(data) {
           </button>
         </div>
       )}
+        
 
       <div className="input_area">
-        <p>{status}</p>
+         {status && <p className="status_text">{status}</p>}
+     
+        {/* <p>{status}</p> */}
         <textarea
           value={prompt || ""}
           id="textarea"
-          placeholder="Send a message to AI agent"
+          placeholder="Send a message to Github code fixer"
           onChange={handlePromptChange}
         ></textarea>
         <button onClick={handleSendPrompt}>Send</button>
