@@ -30,7 +30,7 @@ export default function Projects() {
     }
 
     loadProjects();
-  }, []);
+  }, [API_BASE_URL]);
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
   if (errMsg) return (
