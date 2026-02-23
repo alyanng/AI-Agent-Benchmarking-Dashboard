@@ -21,9 +21,7 @@ function App() {
         <Route path="/configurations/:projectId" element={<Configurations />} />
         <Route path="/errors" element={<Errors />} />
         <Route path="/errors/:configurationId" element={<Errors />} />
-        <Route path="/configurations/:projectId" element={<Configurations />} />
         <Route path="/agent-performance/:projectId" element={<AgentPerformance />} />
-        <Route path="/projects" element={<Projects />} /> {/* Projects list page */}
         <Route path="/stability" element={<StabilityGraph />} />
         <Route path="/combined" element={<CombinedGraph />} />
         <Route path="/dashboard/:projectId" element={<Dashboard />} />

@@ -195,9 +195,8 @@ function ChartAreaCompareModels() {
     async function fetchData() {
       setLoading(true);
       setError(null);
+    const { projectId } = useParams();
       try {
-        // TODO: change project_id as needed
-        const projectId = 2;
         const limit = 50;
 
         const res = await fetch(

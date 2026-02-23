@@ -17,88 +17,187 @@ def connect_to_db():
 
 #Inserts a configuration into the database
 def insert_configurations(system_prompt, model, project_id):
-    conn = connect_to_db()
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO configuration (system_prompt, model, project_id) VALUES (%s, %s, %s) RETURNING configuration_ID;",
-        (system_prompt, model, project_id)
-    )
-    config_id = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
-    conn.close()
-    return config_id
+    """
+    Insert a configuration into the database.
+    
+    Args:
+        system_prompt: The system prompt text
+        model: The AI model name
+        project_id: The project ID
+        
+    Returns:
+        int: The configuration_id of the inserted record
+        
+    Raises:
+        ValueError: If project_id is None or invalid
+        psycopg2.Error: If database operation fails
+    """
+    if project_id is None:
+        raise ValueError("project_id is required and cannot be None")
+    
+    conn = None
+    cur = None
+    try:
+        conn = connect_to_db()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO configuration (system_prompt, model, project_id) VALUES (%s, %s, %s) RETURNING configuration_ID;",
+            (system_prompt, model, project_id)
+        )
+        config_id = cur.fetchone()[0]
+        conn.commit()
+        return config_id
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        raise psycopg2.Error(f"Failed to insert configuration: {e}")
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 #Inserts a result into the database
 def insert_fixes(number_of_fixes, duration, tokens, project_id, config_id):
-    conn = connect_to_db()
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO results (number_of_fixes, duration, tokens, project_id, configuration_id) VALUES (%s, %s, %s, %s, %s) RETURNING results_id;",
-        (number_of_fixes, duration, tokens, project_id, config_id)
-    )
-    new_id = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
-    conn.close()
-    print(f"Inserted row with result_id {new_id}")
+    """
+    Insert a result into the database.
+    
+    Args:
+        number_of_fixes: Number of fixes applied
+        duration: Time spent in minutes
+        tokens: Number of tokens used
+        project_id: The project ID
+        config_id: The configuration ID
+        
+    Raises:
+        ValueError: If required parameters are None or invalid
+        psycopg2.Error: If database operation fails
+    """
+    if project_id is None or config_id is None:
+        raise ValueError("project_id and config_id are required and cannot be None")
+    
+    conn = None
+    cur = None
+    try:
+        conn = connect_to_db()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO results (number_of_fixes, duration, tokens, project_id, configuration_id) VALUES (%s, %s, %s, %s, %s) RETURNING results_id;",
+            (number_of_fixes, duration, tokens, project_id, config_id)
+        )
+        new_id = cur.fetchone()[0]
+        conn.commit()
+        print(f"Inserted row with result_id {new_id}")
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        raise psycopg2.Error(f"Failed to insert fixes: {e}")
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 #Fetches configurations of a project from database and returns it as an array
 def get_config_results(project_id):
-    conn = connect_to_db()
-    cur = conn.cursor()
-    cur.execute(
     """
-    SELECT 
-        c.configuration_ID,
-        c.system_prompt,
-        c.model,
-        r.number_of_fixes,
-        r.duration,
-        r.high_quality_errors,
-        r.detected_errors,
-        r.results_id,
-        AVG(r.high_quality_errors) OVER (PARTITION BY c.configuration_ID) as avg_hq_errors,
-        AVG(r.detected_errors) OVER (PARTITION BY c.configuration_ID) as avg_detected_errors
-    FROM configuration c
-    INNER JOIN results r ON c.configuration_ID = r.configuration_id
-    WHERE c.project_id = %s
-    ORDER BY r.results_id 
-    """,
-    (project_id,)
-)
-    rows = cur.fetchall()
+    Fetch configurations and results for a project.
+    
+    Args:
+        project_id: The project ID
+        
+    Returns:
+        list: Array of configuration and result dictionaries
+        
+    Raises:
+        psycopg2.Error: If database query fails
+    """
+    conn = None
+    cur = None
+    try:
+        conn = connect_to_db()
+        cur = conn.cursor()
+        cur.execute(
+        """
+        SELECT 
+            c.configuration_ID,
+            c.system_prompt,
+            c.model,
+            r.number_of_fixes,
+            r.duration,
+            r.high_quality_errors,
+            r.detected_errors,
+            r.results_id,
+            AVG(r.high_quality_errors) OVER (PARTITION BY c.configuration_ID) as avg_hq_errors,
+            AVG(r.detected_errors) OVER (PARTITION BY c.configuration_ID) as avg_detected_errors
+        FROM configuration c
+        INNER JOIN results r ON c.configuration_ID = r.configuration_id
+        WHERE c.project_id = %s
+        ORDER BY r.results_id 
+        """,
+        (project_id,)
+    )
+        rows = cur.fetchall()
 
-    configAndResults =[]
-    for row in rows:
-        configAndResults.append({
-            "configid": row[0],
-            "prompt":row[1] or "",
-            "model": row[2],
-            "fixes":row[3],
-            "duration": row[4],
-            "high_quality_errors":row[5],
-            "detected_errors":row[6],
-            "results_id":row[7],
-            "avg_hq_errors": row[8],
-            "avg_detected_errors":row[9]
-        })
-    cur.close()
-    conn.close()
-    return configAndResults
+        configAndResults =[]
+        for row in rows:
+            configAndResults.append({
+                "configid": row[0],
+                "prompt":row[1] or "",
+                "model": row[2],
+                "fixes":row[3],
+                "duration": row[4],
+                "high_quality_errors":row[5],
+                "detected_errors":row[6],
+                "results_id":row[7],
+                "avg_hq_errors": row[8],
+                "avg_detected_errors":row[9]
+            })
+        return configAndResults
+    except psycopg2.Error as e:
+        raise psycopg2.Error(f"Failed to fetch config results: {e}")
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 def insert_new_system_prompts(projectid: int, prompt):
-    conn = connect_to_db()
-    cur = conn.cursor()
-    cur.execute(
-    "INSERT INTO configuration (system_prompt, project_id) VALUES (%s, %s) RETURNING configuration_ID;",
-    (prompt, projectid)
-    )
-    config_id = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
-    conn.close()
-    return config_id
+    """
+    Insert a new system prompt for a project.
     
+    Args:
+        projectid: The project ID
+        prompt: The system prompt text
+        
+    Returns:
+        int: The configuration_id of the inserted record
+        
+    Raises:
+        ValueError: If projectid is None
+        psycopg2.Error: If database operation fails
+    """
+    if projectid is None:
+        raise ValueError("projectid is required and cannot be None")
     
-
+    conn = None
+    cur = None
+    try:
+        conn = connect_to_db()
+        cur = conn.cursor()
+        cur.execute(
+        "INSERT INTO configuration (system_prompt, project_id) VALUES (%s, %s) RETURNING configuration_ID;",
+        (prompt, projectid)
+        )
+        config_id = cur.fetchone()[0]
+        conn.commit()
+        return config_id
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        raise psycopg2.Error(f"Failed to insert system prompt: {e}")
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
