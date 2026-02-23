@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from pathlib import Path
@@ -66,6 +66,11 @@ def get_detected_errors(limit: int = 50):
     Fetch detected errors from results table.
     Returns data sorted oldest to newest (reversed from query order).
     """
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    
+    conn = None
+    cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -79,8 +84,6 @@ def get_detected_errors(limit: int = 50):
         """, (limit,))
         
         rows = cur.fetchall()
-        cur.close()
-        conn.close()
         
         # Reverse to show oldest to newest
         rows = list(reversed(rows))
@@ -97,7 +100,12 @@ def get_detected_errors(limit: int = 50):
         return result
     except Exception as e:
         print(f"[/api/results/detected-errors] Error: {str(e)}")
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 # =============================================
@@ -109,6 +117,11 @@ def get_high_quality_errors(limit: int = 50):
     Fetch high quality errors from results table.
     Returns data sorted oldest to newest (reversed from query order).
     """
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    
+    conn = None
+    cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -122,8 +135,6 @@ def get_high_quality_errors(limit: int = 50):
         """, (limit,))
         
         rows = cur.fetchall()
-        cur.close()
-        conn.close()
         
         # Reverse to show oldest to newest
         rows = list(reversed(rows))
@@ -140,8 +151,12 @@ def get_high_quality_errors(limit: int = 50):
         return result
     except Exception as e:
         print(f"[/api/results/high_quality_errors] Error: {str(e)}")
-        return {"error": str(e)}
-    
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 # =============================================
@@ -153,6 +168,11 @@ def compare_ai_models(project_id: int, limit: int = 50):
     Compare runs across AI models for one project.
     Returns oldest -> newest.
     """
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    
+    conn = None
+    cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -178,8 +198,6 @@ def compare_ai_models(project_id: int, limit: int = 50):
         )
 
         rows = cur.fetchall()
-        cur.close()
-        conn.close()
 
         # oldest -> newest
         rows.reverse()
@@ -200,17 +218,21 @@ def compare_ai_models(project_id: int, limit: int = 50):
 
     except Exception as e:
         print(f"[/api/results/compare_ai_models] Error: {str(e)}")
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
-
-
-app.include_router(project_router)
 
 # -----------------------------------
 # Endpoint: list error records
 # -----------------------------------
 @app.get("/api/errors")
 def list_errors(configuration_id: int = None):
+    conn = None
+    cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -230,8 +252,6 @@ def list_errors(configuration_id: int = None):
             """)
         
         rows = cur.fetchall()
-        cur.close()
-        conn.close()
 
         return [
             {
@@ -245,11 +265,17 @@ def list_errors(configuration_id: int = None):
         ]
     except Exception as e:
         print(f"[/api/errors] Error: {str(e)}")
-        raise
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 @app.get("/get_config_data")
 def get_config_data_test(project_id: int):
     return {"message": f"Received project_id: {project_id}"}
+
 # -----------------------------------
 # Endpoint: get project-level performance data
 # -----------------------------------
@@ -259,6 +285,8 @@ def get_performance_data(project_id: int):
     Returns average performance metrics per prompt (configuration) for a project.
     Each point in the chart = one prompt with averaged number of fixes and duration.
     """
+    conn = None
+    cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -274,8 +302,6 @@ def get_performance_data(project_id: int):
         """, (project_id,))
         
         rows = cur.fetchall()
-        cur.close()
-        conn.close()
 
         return [
             {
@@ -288,4 +314,9 @@ def get_performance_data(project_id: int):
 
     except Exception as e:
         print(f"[/get_performance_data] Error: {str(e)}")
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
