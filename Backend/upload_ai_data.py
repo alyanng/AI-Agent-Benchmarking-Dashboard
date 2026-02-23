@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, UploadFile, File, Form
 import json
 from typing import Optional, List
@@ -6,12 +5,9 @@ from pydantic import BaseModel
 from store_error_info import save_error_records
 from datetime import datetime
 
-
 from results_and_configuration_info import insert_configurations
 from results_and_configuration_info import insert_fixes, insert_new_system_prompts
-from store_error_info import save_error_records
 from projects_info import insert_project
-
 
 
 router = APIRouter()
@@ -162,7 +158,7 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
     )
 
     errors = parsed_data.get("errors", [])
-    inserted = save_error_records(errors, project_id="1", config_id=config_id)
+    inserted = save_error_records(errors, project_id=str(project_id), config_id=config_id)
 
 
 
@@ -181,4 +177,3 @@ async def upload_system_prompt(projectid: int, prompt: Optional[str] = Form(None
         "success": True,
         "config": config
     }
-
