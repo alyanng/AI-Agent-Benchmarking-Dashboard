@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
-import { useParams, useNavigate } from 'react-router-dom'; 
+import { useParams } from 'react-router-dom'; 
 import Accuracy_graph from "../Accuracy_graph";
 import {
   ResponsiveContainer,
@@ -265,7 +265,7 @@ function ChartAreaCompareModels() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [projectId]);
 
   if (loading) {
     return (
@@ -316,7 +316,7 @@ function ChartAreaCompareModels() {
         />
 
         <Tooltip
-          formatter={(value, name, props) => {
+          formatter={(value, name) => {
             if (name === 'total_fixes') return [`${value}`, 'Total Fixes'];
             if (name === 'speed') return [`${value}`, 'Speed (fixes/min)'];
             if (name === 'total_tokens') return [`${value}`, 'Total Tokens'];
@@ -352,9 +352,6 @@ function Accuracy(){
  const { projectId } = useParams()
 // const projectId = 2;
     const [configurations, setConfigurations] = useState([])
-    const navigate = useNavigate()
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
    
@@ -365,12 +362,9 @@ function Accuracy(){
                     const configResponse = await fetch (`${API_BASE_URL}/get_config_data?project_id=${projectId}`)
                     const configData = await configResponse.json()
                     setConfigurations(configData)
-                    setLoading(false)
 
                 } catch(err) {
                     console.error('Error fetching configurations:', err)
-                    setError(err.message)
-                    setLoading(false)
             }
             }
 
@@ -385,8 +379,6 @@ function Fixes() {
    const { projectId } = useParams();
   // const projectId = 2;
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -400,11 +392,8 @@ function Fixes() {
 
         const json = await res.json();
         setData(json);
-        setLoading(false);
       } catch (err) {
         console.error("Failed to fetch performance data:", err);
-        setError(err.message);
-        setLoading(false);
       }
     };
 
@@ -421,6 +410,7 @@ function Fixes() {
     </div>
   )
 }
+
 
 
 
