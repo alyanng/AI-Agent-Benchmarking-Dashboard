@@ -179,7 +179,7 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
 @router.post("/upload_system_prompt")
 async def upload_system_prompt(projectid: int, prompt: Optional[str] = Form(None)):
     config_id = insert_configurations(system_prompt= prompt, model="", project_id =projectid)
-    results_id = insert_fixes(0, 0, 0, projectid, config_id)
+    results_id = insert_fixes(0, 0, 0, projectid, config_id, 0)
     return {
         "success": True,
         "configid": config_id,
