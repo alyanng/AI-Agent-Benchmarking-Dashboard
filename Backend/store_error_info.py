@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import psycopg2
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 from database import get_conn
 
 @dataclass
@@ -12,12 +13,12 @@ class ErrorRecord:
     error_id: str
     error_type: str
     was_fixed: bool
-    project_id: str
+    project_id: int
     config_id: int
 
 from database import get_conn
 
-def save_error_records(errors: list, project_id: str = "1", config_id: int = None) -> int:
+def save_error_records(errors: list, project_id: Optional[int] = None, config_id: int = None) -> int:
     """
     Save error records into postgres.
     Returns number of newly inserted rows.
@@ -44,7 +45,8 @@ def save_error_records(errors: list, project_id: str = "1", config_id: int = Non
                         VALUES (%s, %s, %s, %s, %s)
                         ON CONFLICT (error_id) DO NOTHING
                         """,
-                        (str(error_id), str(error_type), bool(was_fixed), project_id, configuration_id)
+                        (str(error_id), str(error_type), bool(was_fixed), 
+                         int(project_id) if project_id is not None else None, configuration_id)
                     )
 
                     if cur.rowcount == 1:
@@ -203,6 +205,14 @@ def main():
     default=None,
     help="configuration_id to link error_records to (optional)"
     )
+    
+    parser.add_argument(
+    "--project-id",
+    type=int,
+    default=1,
+    help="project_id to link error_records to (default: 1)"
+    )
+    
     args = parser.parse_args()
 
 
@@ -211,7 +221,8 @@ def main():
 
     # project_name = input_json["project_name"]
     errors = input_json.get("errors", [])
-    config_id = args.config_id  
+    config_id = args.config_id
+    project_id = args.project_id
 
     # records: list[ErrorRecord] = []
     # for e in errors:
@@ -223,7 +234,7 @@ def main():
     #     )
     #     records.append(record)
     
-    inserted = save_error_records(errors, project_id="1", config_id=config_id)
+    inserted = save_error_records(errors, project_id=project_id, config_id=config_id)
     print(f"Inserted {inserted} error records.")
 
     # print("Parsed error records:\n")
