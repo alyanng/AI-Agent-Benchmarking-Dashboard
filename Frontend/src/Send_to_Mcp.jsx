@@ -264,23 +264,6 @@ function extractReportJsonFromTextBlocks(mcpResponse) {
   return null;
 }
 
-// Utility function to extract JSON from AI response text (legacy - kept for backward compatibility)
-function extractJsonFromAiResponse(aiText) {
-  // Method 1: Extract from ```json code block
-  const jsonBlockMatch = aiText.match(/```json\s*\n([\s\S]*?)\n```/);
-  if (jsonBlockMatch) {
-    return jsonBlockMatch[1];
-  }
-  
-  // Method 2: Extract from <artifact> tags
-  const artifactMatch = aiText.match(/<artifact[^>]*>([\s\S]*?)<\/artifact>/);
-  if (artifactMatch) {
-    return artifactMatch[1];
-  }
-  
-  return null;
-}
-
 // Utility function to validate debug report JSON structure
 function validateDebugReport(data) {
   console.log("Validating debug report:", data);
@@ -548,27 +531,16 @@ function Send_to_Mcp(data) {
     }
   }
 
-  
-
-
   return (
     <div className="sendtomcp">
         <div className="agentTitle">
             <img id="autohive" src={autohiveImg} alt="autohive Image" />
       <h3>Github Code Fixer</h3></div>
-      {/* <img src={codefixer} alt="codefixer"></img> */}
        {chatHistory.length === 0 && (
         <div className="images">
-           
     <img id="codefixer" src={codefixerImg} alt="code fixer Image" />
-   
   </div>
     )}
-      {/* <p>
-        I help you debug and fix code issues using production error data from
-        Raygun and GitHub integration.
-        <br /> I analyze errors, create fixes, and submit pull requests.
-      </p> */}
 
       <div className="result_area">
         {chatHistory.map((message, i) => (
@@ -581,40 +553,18 @@ function Send_to_Mcp(data) {
 
       {/* Save Report Section - shown when JSON is detected */}
       {showSaveButton && (
-        <div className="save-report-area" style={{
-          margin: "15px 0",
-          padding: "15px",
-          backgroundColor: "#f0f9ff",
-          border: "2px solid #0ea5e9",
-          borderRadius: "8px",
-          textAlign: "center"
-        }}>
-          <p style={{ margin: "0 0 10px 0", color: "#0369a1", fontWeight: "bold" }}>
+        <div className="save-report-area">
+          <p>
             {saveStatus}
           </p>
-          <button 
-            onClick={handleSaveReport}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#0ea5e9",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-              fontSize: "16px",
-              fontWeight: "bold"
-            }}
-          >
+          <button onClick={handleSaveReport}>
             💾 Save Report to Database
           </button>
         </div>
       )}
-        
 
       <div className="input_area">
          {status && <p className="status_text">{status}</p>}
-     
-        {/* <p>{status}</p> */}
         <textarea
           value={prompt || ""}
           id="textarea"

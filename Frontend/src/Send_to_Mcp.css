@@ -18,8 +18,46 @@
   border-radius: 8px;
   margin-bottom: 10px;
   box-sizing: border-box;
-  margin-bottom: 200px;
+  /* Increased bottom margin to make room for both save button area and input area */
+  margin-bottom: 280px;
   border: solid rgb(242, 192, 250);
+}
+
+/* Save Report Section - positioned above input area */
+.save-report-area {
+  width: 900px;
+  position: fixed;
+  bottom: 150px; /* Positioned above the input area */
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #f0f9ff;
+  border: 2px solid #0ea5e9;
+  border-radius: 8px;
+  text-align: center;
+  box-sizing: border-box;
+  z-index: 10; /* Ensure it appears above other content */
+}
+
+.save-report-area p {
+  margin: 0 0 10px 0;
+  color: #0369a1;
+  font-weight: bold;
+}
+
+.save-report-area button {
+  padding: 10px 20px;
+  background-color: #0ea5e9 !important; /* Override default button style */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  width: auto; /* Override the 100% width from .sendtomcp button */
+}
+
+.save-report-area button:hover {
+  background-color: #0284c7 !important;
 }
 
 .input_area {
@@ -32,6 +70,7 @@
   padding: 10px 0;
   border-radius: 8px;
   border-top: 1px solid #ccc;
+  z-index: 10; /* Ensure it appears above the result area */
 }
 
 .input_area textarea {
@@ -43,7 +82,7 @@
   border-radius: 8px;
   margin-bottom: 10px; 
   box-sizing: border-box;
-  border: 2px solid #ec7dd0;   /* 改这里，颜色可以自定义 */
+  border: 2px solid #ec7dd0;
   box-sizing: border-box;
 }
 
