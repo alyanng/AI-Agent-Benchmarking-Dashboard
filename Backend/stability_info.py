@@ -29,6 +29,9 @@ def get_stability_results(project_id):
         configuration_id
     FROM results
     WHERE project_id = %s
+    AND NOT (
+    run_time = 0
+    )
     ORDER BY configuration_id ASC
     """,
     (project_id,)

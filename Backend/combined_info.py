@@ -32,6 +32,9 @@ def get_all_results_data(project_id: int):
         results_id
     FROM results
     WHERE project_id = %s
+    AND NOT (
+    run_time = 0
+    )
     ORDER BY configuration_id ASC
     """,
     (project_id,)

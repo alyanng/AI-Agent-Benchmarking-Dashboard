@@ -76,6 +76,9 @@ def get_detected_errors(projectid:int):
             SELECT detected_errors, configuration_id
             FROM results
             WHERE project_id = %s
+            AND NOT (
+            run_time = 0
+            )
             ORDER BY results_id ASC
         """, (projectid,))
         
@@ -145,6 +148,9 @@ def get_high_quality_errors(projectid:int):
             SELECT high_quality_errors, configuration_id
             FROM results
             WHERE project_id = %s
+            AND NOT (
+            run_time = 0
+            )
             ORDER BY results_id ASC
         """, (projectid,))
         

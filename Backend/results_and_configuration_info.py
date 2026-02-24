@@ -106,6 +106,7 @@ def get_config_resultnew(project_id):
         r.number_of_fixes
     FROM results r
     WHERE r.project_id = %s
+    AND (r.run_time IS NOT NULL AND r.run_time != 0)
     ORDER BY r.results_id
     """,
     (project_id,)
