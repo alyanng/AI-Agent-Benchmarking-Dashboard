@@ -59,7 +59,8 @@ def get_config_results(project_id):
         r.detected_errors,
         r.results_id,
         AVG(r.high_quality_errors) OVER (PARTITION BY c.configuration_ID) as avg_hq_errors,
-        AVG(r.detected_errors) OVER (PARTITION BY c.configuration_ID) as avg_detected_errors
+        AVG(r.detected_errors) OVER (PARTITION BY c.configuration_ID) as avg_detected_errors,
+        r.model
     FROM configuration c
     INNER JOIN results r ON c.configuration_ID = r.configuration_id
     WHERE c.project_id = %s
@@ -81,7 +82,8 @@ def get_config_results(project_id):
             "detected_errors":row[6],
             "results_id":row[7],
             "avg_hq_errors": row[8],
-            "avg_detected_errors":row[9]
+            "avg_detected_errors":row[9],
+            "r-model":row[10]
         })
     cur.close()
     conn.close()
@@ -89,3 +91,74 @@ def get_config_results(project_id):
     
     
 
+def get_config_resultnew(project_id):
+    
+    conn = connect_to_db()
+    cur = conn.cursor()
+    cur.execute(
+    """
+    SELECT 
+        r.results_id,
+        r."model",
+        r.number_of_fixes
+    FROM results r
+    WHERE r.project_id = %s
+    ORDER BY r.results_id
+    """,
+    (project_id,)
+    )
+    rows = cur.fetchall()
+
+    configAndResults = []
+    for row in rows:
+        configAndResults.append({
+            "results_id": row[0],
+            "model": row[1],
+            "fixes": row[2],
+        })
+    cur.close()
+    conn.close()
+    return configAndResults
+#     conn = connect_to_db()
+#     cur = conn.cursor()
+#     cur.execute(
+#     """
+#     SELECT 
+#         c.configuration_ID,
+#         c.system_prompt,
+#         c.model,
+#         r.number_of_fixes,
+#         r.duration,
+#         r.high_quality_errors,
+#         r.detected_errors,
+#         r.results_id,
+#         AVG(r.high_quality_errors) OVER (PARTITION BY c.configuration_ID) as avg_hq_errors,
+#         AVG(r.detected_errors) OVER (PARTITION BY c.configuration_ID) as avg_detected_errors,
+#         r.model
+#     FROM configuration c
+#     INNER JOIN results r ON c.configuration_ID = r.configuration_id
+#     WHERE c.project_id = %s
+#     ORDER BY r.results_id 
+#     """,
+#     (project_id,)
+# )
+#     rows = cur.fetchall()
+
+#     configAndResults =[]
+#     for row in rows:
+#         configAndResults.append({
+#             "configid": row[0],
+#             "prompt":row[1] or "",
+#             "model": row[2],
+#             "fixes":row[3],
+#             "duration": row[4],
+#             "high_quality_errors":row[5],
+#             "detected_errors":row[6],
+#             "results_id":row[7],
+#             "avg_hq_errors": row[8],
+#             "avg_detected_errors":row[9],
+#             "r-model":row[10]
+#         })
+#     cur.close()
+#     conn.close()
+#     return configAndResults
