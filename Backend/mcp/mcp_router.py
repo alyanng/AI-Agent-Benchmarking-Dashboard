@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Dict, Any
 from .mcp_client import MCPClient
 import os
 
@@ -9,30 +10,39 @@ router = APIRouter(prefix="/api/mcp")
 
 
 class MCPRequest(BaseModel):
-    tool_name : str
-    prompt : str
+    """Request model for MCP tool calls."""
+    tool_name: str
+    prompt: str
 
 
 @router.post("/call_tool")
-async def call_mcp_tool(request:MCPRequest):
-    try: 
+async def call_mcp_tool(request: MCPRequest) -> Dict[str, Any]:
+    """
+    Call an MCP tool with the provided prompt.
+    
+    Args:
+        request: MCPRequest containing tool_name and prompt
+        
+    Returns:
+        Dictionary containing success status and tool response data
+        
+    Raises:
+        HTTPException: If tool call fails
+    """
+    try:
         client = MCPClient(
-        url = os.getenv("MCP_SERVER_URL"),
-        token =os.getenv("MCP_BEARER_TOKEN") 
-    )
+            url=os.getenv("MCP_SERVER_URL"),
+            token=os.getenv("MCP_BEARER_TOKEN")
+        )
      
-        result = await client.call_tool(request.tool_name,request.prompt)
+        result = await client.call_tool(request.tool_name, request.prompt)
    
-        # return json.loads(result.text)
-   
-        print("result:",result)
+        print("result:", result)
         return {
-        "success": True,
-        "data":result
-   }
+            "success": True,
+            "data": result
+        }
     except Exception as e:
         import traceback
-        traceback.print_exc() 
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
- 
-    
