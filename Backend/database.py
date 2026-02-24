@@ -4,15 +4,10 @@ from contextlib import contextmanager
 import os
 
 
-DB_CONFIG = {
-    'dbname': '',
-    'user': '',  
-    'password': '',      
-    'host': 'localhost',
-    'port': 5432
-}
-
 def get_conn():
+    """
+    Create and return a PostgreSQL database connection using environment variables.
+    """
     return psycopg2.connect(
         host=os.getenv("POSTGRES_HOST"),
         port=os.getenv("POSTGRES_PORT"),
