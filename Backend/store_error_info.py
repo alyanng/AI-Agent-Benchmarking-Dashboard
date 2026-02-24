@@ -35,7 +35,7 @@ def save_error_records(errors: list, project_id = None, config_id: int = None, r
                     was_fixed = e.get("was_fixed", False)
                     configuration_id = config_id
         
-                    print(f"正在插入: error_name={error_name}, error_type={error_type}")  
+                    print(f"Inserting: error_name={error_name}, error_type={error_type}")  
                     if not error_name or not error_type:
                         continue
 
@@ -50,9 +50,9 @@ def save_error_records(errors: list, project_id = None, config_id: int = None, r
 
                     if cur.rowcount == 1:
                         inserted += 1
-                        print(f"插入成功") 
+                        print(f"Insert successful, rowcount={cur.rowcount}") 
                     else:
-                        print(f"插入失败，rowcount={cur.rowcount}") 
+                        print(f"Insert failed, rowcount={cur.rowcount}") 
     finally:
         conn.close()
 
