@@ -265,7 +265,7 @@ app.include_router(project_router)
 # Endpoint: list error records
 # -----------------------------------
 @app.get("/api/errors")
-def list_errors(configuration_id: int = None):
+def list_errors(configuration_id: int = None, run_time:int = None):
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -274,9 +274,10 @@ def list_errors(configuration_id: int = None):
             cur.execute("""
                 SELECT error_id, error_type, was_fixed, project_id, configuration_id
                 FROM error_records
-                WHERE configuration_id = %s
+                WHERE configuration_id = %s AND run_time = %s
                 ORDER BY error_id
-            """, (configuration_id,))
+    """,
+    (configuration_id, run_time))
         else:
             cur.execute("""
                 SELECT error_id, error_type, was_fixed, project_id, configuration_id

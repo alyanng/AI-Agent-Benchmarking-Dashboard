@@ -49,7 +49,7 @@ export default function CombinedGraph({data}) {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="configid" >
                     <Label 
-                        value="Prompts" 
+                        value="System Prompts" 
                         angle={0} 
                         position="insideBottomRight"
                         offset={0}

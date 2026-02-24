@@ -18,7 +18,7 @@ function Configurations() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const configResponse = await fetch(`${API_BASE_URL}/get_config_data?project_id=${projectId}`);
+        const configResponse = await fetch(`${API_BASE_URL}/get_config_data_forResults?project_id=${projectId}`);
         const configData = await configResponse.json();
         setConfigurations(configData);
         setLoading(false);
@@ -41,7 +41,7 @@ function Configurations() {
       <div style={{ padding: 16 }}>
         {/* Page Header + Agent Performance Button */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h1>System prompts</h1>
+          <h1>Testing Results</h1>
 
           {/* CHANGED: simplified - button goes directly to project-level performance */}
           <button
@@ -56,26 +56,32 @@ function Configurations() {
         <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
             <tr>
-              <th>ID</th>
+              <th>No</th>
               <th>System Prompt</th>
               <th>Number of Fixes</th>
               <th>Duration</th>
+              <th>Model</th>
+              <th>Configuration ID</th>
+              <th>Round #</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {configurations.map(config => (
+            {configurations.map((config,index) => (
               <tr key={config.configid}>
-                <td>{config.configid}</td>
+                <td>{index+1}</td>
                 <td className="formatted-text">
-                  <ExpandableText text={config.prompt} wordLimit={50} />
+               <ExpandableText text={config.prompt || ""} wordLimit={50} />
                 </td>
                 <td>{config.fixes}</td>
                 <td>{config.duration}</td>
+                <td>{config.model}</td>
+                <td>{config.configid}</td>
+                <td>{config.run_time}</td>
                 <td>
                   <button
                     className="error-button"
-                    onClick={() => navigate(`/errors/${config.configid}`)}
+                    onClick={() => navigate(`/errors/${config.configid}/${config.run_time}`)}
                   >
                     Errors
                   </button>

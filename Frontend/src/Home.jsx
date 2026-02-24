@@ -12,10 +12,10 @@ function Home() {
   return (
     <div className="Home">
       <div className="Home-NavBar"><NavBar/> </div>
-  
+      {/* <FileUploadwithtext/> */}
       <Send_to_Mcp/>
       
-      {/* <FileUploadwithtext/> */}
+      
     </div>
   );
 }

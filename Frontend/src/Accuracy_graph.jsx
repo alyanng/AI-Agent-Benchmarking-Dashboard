@@ -1,4 +1,4 @@
-import {ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import {ResponsiveContainer, LineChart, Line, Label, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import {useState, useEffect} from 'react';
 
 
@@ -58,7 +58,17 @@ accuracy:config.avg_hq_errors/config.avg_detected_errors,
         margin={{ top: 30, right: 30, left: 20, bottom: 20 }}
       >
         <CartesianGrid strokeDasharray="5 5" />
-        <XAxis dataKey="configid" interval={0} />
+        {/* <XAxis dataKey="configid" interval={0} 
+        
+        /> */}
+         <XAxis dataKey="configid" interval={0}>
+                            <Label 
+                                value="System Prompts" 
+                                angle={0} 
+                                position="insideBottomRight"
+                                offset={0}
+                            />
+                        </XAxis> 
         <YAxis />
         <Tooltip />
         <Legend />
