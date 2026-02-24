@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, Label, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Line, LineChart, XAxis, YAxis, Label, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './Home.css'
 import { useState, useEffect } from 'react';
 import NavBar from "./NavBar";
@@ -45,7 +45,7 @@ export default function StabilityGraph({data}) {
         <div>
             <h3 style={{ textAlign: 'center' }}>Stability: Standard deviation of detected errors</h3>
             <ResponsiveContainer width={900} height={300}>
-                <BarChart data ={data} margin={{ top: 10, left: 20, right: 20, bottom: 40 }}>
+                <LineChart data ={data} margin={{ top: 10, left: 20, right: 20, bottom: 40 }}>
                  <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="configid" >
                     <Label 
@@ -62,11 +62,11 @@ export default function StabilityGraph({data}) {
                         position="insideLeft"
                     />
                 </YAxis>
-          
-                <Bar dataKey="std_dev" fill="#3b82f6"/>
+                <Line type="monotone" dataKey="std_dev" stroke="#248ed9" activeDot={{ r: 8 }} />
+                {/* <Bar dataKey="std_dev" fill="#3b82f6"/> */}
 
 
-                </BarChart>
+                </LineChart>
             </ResponsiveContainer>
         </div>
     )
