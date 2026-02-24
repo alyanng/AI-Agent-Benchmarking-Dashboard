@@ -2,15 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from pathlib import Path
+import statistics
+from typing import Dict, List, Any, Union
 
 # Import your routers
 import upload_ai_data
 import get_ai_data
 from mcp import mcp_router
-from project_routes import router as project_router  # Projects router
+from project_routes import router as project_router
 
 from database import get_conn
-import statistics
 
 # -----------------------------------
 # Load environment variables
@@ -24,7 +25,7 @@ load_dotenv(dotenv_path=env_path)
 app = FastAPI(title="Backend API")
 
 # Helper function to safely convert to int
-def safe_int(value):
+def safe_int(value: Any) -> int:
     """Convert value to int, return 0 if null or invalid"""
     if value is None:
         return 0
@@ -33,7 +34,6 @@ def safe_int(value):
     except (ValueError, TypeError):
         return 0
 
-# Define CORS allowed origins
 # -----------------------------------
 # CORS settings
 # -----------------------------------
@@ -55,23 +55,22 @@ app.add_middleware(
 # -----------------------------------
 app.include_router(upload_ai_data.router)
 app.include_router(get_ai_data.router)
-app.include_router(project_router)      # Projects endpoint
+app.include_router(project_router)
 app.include_router(mcp_router.router)
 
 # =============================================
 # Endpoint: Get detected errors from results table
 # =============================================
 @app.get("/api/results/detected_errors")
-def get_detected_errors(projectid:int):
+def get_detected_errors(projectid: int) -> List[Dict[str, Union[int, float]]]:
     """
     Fetch detected errors from results table.
-    Returns data sorted oldest to newest (reversed from query order).
+    Returns data sorted oldest to newest.
     """
     try:
         conn = get_conn()
         cur = conn.cursor()
         
-        # Query results table ordered by result_id DESC
         cur.execute("""
             SELECT detected_errors, configuration_id
             FROM results
@@ -83,14 +82,14 @@ def get_detected_errors(projectid:int):
         data = []
         for r in rows:
             data.append({
-                "error":r[0],
-                "configid":r[1],
+                "error": r[0],
+                "configid": r[1],
             })
 
         cur.close()
         conn.close()
 
-        configs = {}
+        configs: Dict[int, List[float]] = {}
         for d in data:
             error = d.get("error")
             config = d.get("configid")
@@ -106,20 +105,6 @@ def get_detected_errors(projectid:int):
                 "configid": config,
                 "error": error
             })
-
-        
-        
-        # Reverse to show oldest to newest
-        # rows = list(reversed(rows))
-        
-        # Format for chart: convert null values to 0, create x-axis index
-        # result = [
-        #     {
-        #         "x": idx + 1,
-        #         "detected_errors": safe_int(row[0])
-        #     }
-        #     for idx, row in enumerate(rows)
-        # ]
         
         return averages
     except Exception as e:
@@ -131,16 +116,15 @@ def get_detected_errors(projectid:int):
 # Endpoint: Get high quality errors from results table
 # =============================================
 @app.get("/api/results/high_quality_errors")
-def get_high_quality_errors(projectid:int):
+def get_high_quality_errors(projectid: int) -> List[Dict[str, Union[int, float]]]:
     """
     Fetch high quality errors from results table.
-    Returns data sorted oldest to newest (reversed from query order).
+    Returns data sorted oldest to newest.
     """
     try:
         conn = get_conn()
         cur = conn.cursor()
         
-        # Query results table ordered by result_id DESC
         cur.execute("""
             SELECT high_quality_errors, configuration_id
             FROM results
@@ -155,11 +139,11 @@ def get_high_quality_errors(projectid:int):
         data = []
         for r in rows:
             data.append({
-                "error":r[0],
-                "configid":r[1],
+                "error": r[0],
+                "configid": r[1],
             })
 
-        configs = {}
+        configs: Dict[int, List[float]] = {}
         for d in data:
             error = d.get("error")
             config = d.get("configid")
@@ -175,35 +159,18 @@ def get_high_quality_errors(projectid:int):
                 "configid": config,
                 "high-quality": error
             })
-
-        
-
-
-        
-        # Reverse to show oldest to newest
-        # rows = list(reversed(rows))
-        
-        # Format for chart: convert null values to 0, create x-axis index
-        # result = [
-        #     {
-        #         "x": idx + 1,
-        #         "high_quality_errors": safe_int(row[0])
-        #     }
-        #     for idx, row in enumerate(rows)
-        # ]
         
         return averages
     except Exception as e:
         print(f"[/api/results/high_quality_errors] Error: {str(e)}")
         return {"error": str(e)}
-    
 
 
 # =============================================
-# Endpoint: Compare ai models
+# Endpoint: Compare AI models
 # =============================================
 @app.get("/api/results/compare_ai_models")
-def compare_ai_models(project_id: int, limit: int = 50):
+def compare_ai_models(project_id: int, limit: int = 50) -> Union[List[Dict[str, Any]], Dict[str, str]]:
     """
     Compare runs across AI models for one project.
     Returns oldest -> newest.
@@ -258,14 +225,14 @@ def compare_ai_models(project_id: int, limit: int = 50):
         return {"error": str(e)}
 
 
-
-app.include_router(project_router)
-
 # -----------------------------------
 # Endpoint: list error records
 # -----------------------------------
 @app.get("/api/errors")
-def list_errors(configuration_id: int = None):
+def list_errors(configuration_id: int = None) -> List[Dict[str, Union[str, bool, int]]]:
+    """
+    List error records, optionally filtered by configuration_id.
+    """
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -302,14 +269,18 @@ def list_errors(configuration_id: int = None):
         print(f"[/api/errors] Error: {str(e)}")
         raise
 
+
 @app.get("/get_config_data")
-def get_config_data_test(project_id: int):
+def get_config_data_test(project_id: int) -> Dict[str, str]:
+    """Test endpoint for configuration data retrieval."""
     return {"message": f"Received project_id: {project_id}"}
+
+
 # -----------------------------------
 # Endpoint: get project-level performance data
 # -----------------------------------
 @app.get("/get_performance_data")
-def get_performance_data(project_id: int):
+def get_performance_data(project_id: int) -> Union[List[Dict[str, Any]], Dict[str, str]]:
     """
     Returns average performance metrics per prompt (configuration) for a project.
     Each point in the chart = one prompt with averaged number of fixes and duration.
