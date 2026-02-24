@@ -134,7 +134,8 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
         "number_of_errors_from_raygun": data.get("number_of_errors_from_raygun"),
         "errors": data.get("errors"),
         "prompt": prompt,
-        "fixes": data.get("number_of_fixes")
+        "fixes": data.get("number_of_fixes"),
+        "run_time":data.get("run_time")
     }
 
     # Insert project into 'projects' table
@@ -148,7 +149,7 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
     config_id = insert_configurations(
         system_prompt=parsed_data.get("prompt"),
         model = "",
-        project_id = project_id
+        project_id = project_id,
     )
 
     #Calls function from store_results_info file to insert results into db
@@ -157,11 +158,13 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
     duration=parsed_data.get("total_time_spent_minutes", 0),
     tokens = 0,
     project_id = project_id,
-    config_id = config_id
+    config_id = config_id, 
+    run_time = parsed_data.get("run_time", 0)
     )
 
     errors = parsed_data.get("errors", [])
-    inserted = save_error_records(errors, project_id=project_id, config_id=config_id)
+    run_time =  parsed_data.get("run_time")
+    inserted = save_error_records(errors,project_id=project_id, config_id=config_id ,run_time=run_time)
 
 
 

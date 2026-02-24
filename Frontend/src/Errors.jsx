@@ -3,7 +3,7 @@ import NavBar from './NavBar';
 import { useParams } from 'react-router-dom';
 
 export default function Errors() {
-  const { configurationId } = useParams();
+  const { configurationId, run_time } = useParams();
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState("");
@@ -14,12 +14,16 @@ export default function Errors() {
       try {
         setLoading(true);
         setErrMsg("");
+    
 
         let url = `${API_BASE_URL}/api/errors`;
-        if (configurationId) {
-          url += `?configuration_id=${configurationId}`;
-        }
+        // if (configurationId) {
+        //   url += `?configuration_id=${configurationId}`;
+        // }
 
+        if (configurationId && run_time) {
+  url = url + "?configuration_id=" + configurationId + "&run_time=" + run_time;
+}
         console.log("[Errors] Fetching from URL:", url);
         const res = await fetch(url);
         console.log("[Errors] Response status:", res.status, "OK:", res.ok);
@@ -77,7 +81,8 @@ export default function Errors() {
         <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
             <tr>
-              <th>Error ID</th>
+              {/* <th>Error Name</th> */}
+               <th>No</th>
               <th>Error Type</th>
               <th>Was Fixed</th>
               <th>Project ID</th>
@@ -85,13 +90,14 @@ export default function Errors() {
             </tr>
           </thead>
           <tbody>
-            {errors.map((e) => (
+            {errors.map((e,index) => (
               <tr key={e.error_id}>
-                <td>{e.error_id}</td>
+                {/* <td>{e.error_name}</td> */}
+                <td>{index+1}</td>
                 <td>{e.error_type}</td>
                 <td>{String(e.was_fixed)}</td>
                 <td>{e.project_id}</td>
-                <td>{e.configuration_id}</td>          
+                <td>{e.configuration_id}</td>    
               </tr>
             ))}
           </tbody>
