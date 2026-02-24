@@ -55,13 +55,15 @@ function SystemPromptList() {
         <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
             <tr>
-              <th>ID</th>
+              <th>No</th>
+              <th>Configuration ID</th>
               <th>System Prompt</th>
             </tr>
           </thead>
           <tbody>
-            {configurations.map(config => (
+            {configurations.map((config, index) => (
               <tr key={config.configid}>
+                <td>{index+1}</td>
                 <td>{config.configid}</td>
                 <td className="formatted-text">
                   <ExpandableText text={config.prompt} wordLimit={50} />
