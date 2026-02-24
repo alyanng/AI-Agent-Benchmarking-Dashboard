@@ -125,7 +125,7 @@ const CompareModelsBarChart = ({ projectId, limit = 50 }) => {
   }
 
   // Tooltip 
-  const formatTooltipValue = (value, name, props) => {
+  const formatTooltipValue = (value, name) => {
     if (name === 'total_fixes') return [`${value}`, 'Total Fixes'];
     if (name === 'speed') return [`${value}`, 'Speed (fixes/min)'];
     if (name === 'total_tokens') return [`${value}`, 'Total Tokens'];
