@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from results_and_configuration_info import get_config_results
+from results_and_configuration_info import get_config_resultnew
 from stability_info import get_stability_results
 from combined_info import get_all_results_data
 
@@ -20,3 +21,8 @@ def get_combined(project_id: int):
     combined = get_all_results_data(project_id)
     print(combined)
     return combined
+
+@router.get("/get_config_data_new")
+async def get_configurationsnew(project_id: int):
+    configurations = get_config_resultnew(project_id)
+    return configurations
