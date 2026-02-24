@@ -43,7 +43,7 @@ export default function CombinedGraph({data}) {
 
     return (
         <div>
-            <h1 style={{ textAlign: "center"}}> Combined data across system prompts</h1>
+            <h3 style={{ textAlign: 'center' }}>Combined data across system prompts</h3>
             <ResponsiveContainer width={900} height={400}>
                 <BarChart data ={data} margin={{ top: 10, left: 0, right: 20, bottom: 40 }}>
                 <CartesianGrid strokeDasharray="3 3" />

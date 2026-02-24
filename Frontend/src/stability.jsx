@@ -43,6 +43,7 @@ export default function StabilityGraph({data}) {
   }
     return (
         <div>
+            <h3 style={{ textAlign: 'center' }}>Stability: Standard deviation of detected errors</h3>
             <ResponsiveContainer width={900} height={300}>
                 <BarChart data ={data} margin={{ top: 10, left: 20, right: 20, bottom: 40 }}>
                  <CartesianGrid strokeDasharray="3 3" />
