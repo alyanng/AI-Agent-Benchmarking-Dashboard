@@ -1,16 +1,12 @@
-
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 import json
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
-from store_error_info import save_error_records
 from datetime import datetime
 
-
-from results_and_configuration_info import insert_configurations, insert_fixes
 from store_error_info import save_error_records
+from results_and_configuration_info import insert_configurations, insert_fixes
 from projects_info import insert_project
-
 
 
 router = APIRouter()
@@ -34,7 +30,7 @@ class DebugReportSummary(BaseModel):
 class DebugReport(BaseModel):
     project_name: str
     project_github_url: str
-    task_prompt_timestamp: Optional[str] = None  # Make optional
+    task_prompt_timestamp: Optional[str] = None
     number_of_fixes: int
     total_time_spent_minutes: int
     number_of_errors_from_raygun: int
@@ -48,7 +44,7 @@ class SaveJsonRequest(BaseModel):
 
 
 @router.post("/save_json_data")
-async def save_json_data(request: SaveJsonRequest):
+async def save_json_data(request: SaveJsonRequest) -> Dict[str, Any]:
     """
     Receive and save JSON debug report directly (not as file upload).
     Validates JSON structure and saves to database.
@@ -115,71 +111,107 @@ async def save_json_data(request: SaveJsonRequest):
 
 
 @router.post("/upload_ai_data")
-async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = Form(None)):
-    filename = file.filename
-    if filename.endswith(".json") == False:
-        return {
-        "error": "Only .json files are allowed"
+async def upload_ai_json(
+    file: UploadFile = File(...), 
+    prompt: Optional[str] = Form(None)
+) -> Dict[str, Any]:
+    """
+    Upload and process an AI debug report JSON file.
+    """
+    try:
+        filename = file.filename
+        if not filename or not filename.endswith(".json"):
+            raise HTTPException(
+                status_code=400,
+                detail="Only .json files are allowed"
+            )
+            
+        raw = await file.read()
+        data = json.loads(raw)
+      
+        parsed_data = {
+            "project_name": data.get("project_name"),
+            "project_github_url": data.get("project_github_url"),
+            "task_prompt_timestamp": data.get("task_prompt_timestamp"),
+            "total_time_spent_minutes": data.get("total_time_spent_minutes"),
+            "number_of_errors_from_raygun": data.get("number_of_errors_from_raygun"),
+            "errors": data.get("errors"),
+            "prompt": prompt,
+            "fixes": data.get("number_of_fixes")
         }
+
+        # Insert project into 'projects' table
+        project_id = insert_project(
+            project_name=parsed_data.get("project_name"),
+            github_url=parsed_data.get("project_github_url"),
+            number_of_errors=parsed_data.get("number_of_errors_from_raygun", 0)
+        )
         
-    raw = await file.read()
-    data = json.loads(raw)
-  
+        # Insert configuration
+        config_id = insert_configurations(
+            system_prompt=parsed_data.get("prompt"),
+            model="",
+            project_id=project_id
+        )
+
+        # Insert results
+        insert_fixes(
+            number_of_fixes=parsed_data.get("fixes", 0),
+            duration=parsed_data.get("total_time_spent_minutes", 0),
+            tokens=0,
+            project_id=project_id,
+            config_id=config_id
+        )
+
+        errors = parsed_data.get("errors", [])
+        inserted = save_error_records(errors, project_id=project_id, config_id=config_id)
+
+        return {
+            "success": True,
+            "message": "File received and processed successfully",
+            "total_errors_in_file": len(errors),
+            "inserted_new_rows": inserted
+        }
     
-    parsed_data = {
-        "project_name": data.get("project_name"),
-        "project_github_url": data.get("project_github_url"),
-        "task_prompt_timestamp": data.get("task_prompt_timestamp"),
-        "total_time_spent_minutes": data.get("total_time_spent_minutes"),
-        "number_of_errors_from_raygun": data.get("number_of_errors_from_raygun"),
-        "errors": data.get("errors"),
-        "prompt": prompt,
-        "fixes": data.get("number_of_fixes")
-    }
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid JSON format: {str(e)}"
+        )
+    except Exception as e:
+        print(f"Error processing uploaded file: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing file: {str(e)}"
+        )
 
-    # Insert project into 'projects' table
-    project_id = insert_project(
-        project_name=parsed_data.get("project_name"),
-        github_url=parsed_data.get("project_github_url"),
-        number_of_errors=parsed_data.get("number_of_errors_from_raygun", 0)
-    )
-    #Calls function from store_configurations_info file to insert configuration into db
-    
-    config_id = insert_configurations(
-        system_prompt=parsed_data.get("prompt"),
-        model = "",
-        project_id = project_id
-    )
-
-    #Calls function from store_results_info file to insert results into db
-    insert_fixes(
-    number_of_fixes=parsed_data.get("fixes", 0),
-    duration=parsed_data.get("total_time_spent_minutes", 0),
-    tokens = 0,
-    project_id = project_id,
-    config_id = config_id
-    )
-
-    errors = parsed_data.get("errors", [])
-    inserted = save_error_records(errors, project_id=project_id, config_id=config_id)
-
-
-
-    return {
-        "success": True,
-        "message": "file received",
-        "total_errors_in_file": len(errors),
-        "inserted_new_rows": inserted
-        
-   }
 
 @router.post("/upload_system_prompt")
-async def upload_system_prompt(projectid: int, prompt: Optional[str] = Form(None)):
-    config_id = insert_configurations(system_prompt= prompt, model="", project_id =projectid)
-    results_id = insert_fixes(0, 0, 0, projectid, config_id)
-    return {
-        "success": True,
-        "configid": config_id,
-        "resultid": results_id
-    }
-
+async def upload_system_prompt(
+    projectid: int, 
+    prompt: Optional[str] = Form(None)
+) -> Dict[str, Any]:
+    """
+    Upload a new system prompt for an existing project.
+    """
+    try:
+        config_id = insert_configurations(
+            system_prompt=prompt, 
+            model="", 
+            project_id=projectid
+        )
+        results_id = insert_fixes(0, 0, 0, projectid, config_id)
+        
+        return {
+            "success": True,
+            "configid": config_id,
+            "resultid": results_id
+        }
+    except Exception as e:
+        print(f"Error uploading system prompt: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error uploading system prompt: {str(e)}"
+        )
