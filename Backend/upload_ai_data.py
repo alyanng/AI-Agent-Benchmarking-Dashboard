@@ -90,7 +90,7 @@ async def save_json_data(request: SaveJsonRequest):
         errors_list = [error.dict() for error in report.errors]
         inserted_errors = save_error_records(
             errors_list, 
-            project_id=str(project_id), 
+            project_id=project_id, 
             config_id=config_id
         )
         print(f"Inserted {inserted_errors} error records")
@@ -161,7 +161,7 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
     )
 
     errors = parsed_data.get("errors", [])
-    inserted = save_error_records(errors, project_id="1", config_id=config_id)
+    inserted = save_error_records(errors, project_id=project_id, config_id=config_id)
 
 
 

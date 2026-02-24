@@ -17,7 +17,7 @@ class ErrorRecord:
 
 from database import get_conn
 
-def save_error_records(errors: list, project_id: str = "1", config_id: int = None) -> int:
+def save_error_records(errors: list, project_id = None, config_id: int = None) -> int:
     """
     Save error records into postgres.
     Returns number of newly inserted rows.
@@ -44,7 +44,7 @@ def save_error_records(errors: list, project_id: str = "1", config_id: int = Non
                         VALUES (%s, %s, %s, %s, %s)
                         ON CONFLICT (error_id) DO NOTHING
                         """,
-                        (str(error_id), str(error_type), bool(was_fixed), project_id, configuration_id)
+                        (str(error_id), str(error_type), bool(was_fixed), int(project_id) if project_id else None, configuration_id)
                     )
 
                     if cur.rowcount == 1:
