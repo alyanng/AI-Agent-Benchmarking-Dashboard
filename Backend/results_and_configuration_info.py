@@ -65,6 +65,7 @@ def get_config_results(project_id):
     FROM configuration c
     INNER JOIN results r ON c.configuration_ID = r.configuration_id
     WHERE c.project_id = %s
+    AND (r.run_time IS NOT NULL AND r.run_time != 0)
     ORDER BY r.results_id 
     """,
     (project_id,)

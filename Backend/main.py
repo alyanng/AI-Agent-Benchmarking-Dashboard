@@ -331,6 +331,7 @@ def get_performance_data(project_id: int):
                 AVG(duration) AS avg_duration
             FROM results
             WHERE project_id = %s
+            AND (run_time IS NOT NULL AND run_time != 0)
             GROUP BY configuration_id
             ORDER BY configuration_id
         """, (project_id,))
