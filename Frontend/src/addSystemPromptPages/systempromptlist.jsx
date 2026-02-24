@@ -18,7 +18,7 @@ function SystemPromptList() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const configResponse = await fetch(`${API_BASE_URL}/get_config_data?project_id=${projectId}`);
+        const configResponse = await fetch(`${API_BASE_URL}/get_config_data_forResults?project_id=${projectId}`);
         const configData = await configResponse.json();
         setConfigurations(configData);
         setLoading(false);
