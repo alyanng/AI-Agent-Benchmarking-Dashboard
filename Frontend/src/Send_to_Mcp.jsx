@@ -553,30 +553,11 @@ function Send_to_Mcp(data) {
 
       {/* Save Report Section - shown when JSON is detected */}
       {showSaveButton && (
-        <div className="save-report-area" style={{
-          margin: "15px 0",
-          padding: "15px",
-          backgroundColor: "#f0f9ff",
-          border: "2px solid #0ea5e9",
-          borderRadius: "8px",
-          textAlign: "center"
-        }}>
-          <p style={{ margin: "0 0 10px 0", color: "#0369a1", fontWeight: "bold" }}>
+        <div className="save-report-area">
+          <p>
             {saveStatus}
           </p>
-          <button 
-            onClick={handleSaveReport}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#0ea5e9",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-              fontSize: "16px",
-              fontWeight: "bold"
-            }}
-          >
+          <button onClick={handleSaveReport}>
             💾 Save Report to Database
           </button>
         </div>
