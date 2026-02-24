@@ -94,7 +94,6 @@ const Dashboard = () => {
       <div className="dashboard-container">
         <div className="dashboard-header">
           <h1>Results Dashboard</h1>
-          <p>Analyzing detected errors across all test results</p>
         </div>
 
         <div className="dashboard-content">
