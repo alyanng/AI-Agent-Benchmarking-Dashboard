@@ -328,7 +328,7 @@ function validateDebugReport(data) {
   return true;
 }
 
-function Send_to_Mcp(data) {
+function Send_to_Mcp() {
   const [prompt, setPrompt] = useState(null);
   const [status, setStatus] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
@@ -398,7 +398,7 @@ function Send_to_Mcp(data) {
             console.log("🔍 First 100 chars:", textContent.substring(0, 100));
             
             // Check if text starts with [{ or [" (stringified array)
-            if (textContent.startsWith('[{') || textContent.startsWith('[\"')) {
+            if (textContent.startsWith('[{') || textContent.startsWith('["')) {
               console.log("🎯 DETECTED: content[0].text is stringified JSON array!");
               try {
                 const parsedInner = JSON.parse(textContent);
