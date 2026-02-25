@@ -112,18 +112,6 @@ def get_detected_errors(projectid:int):
 
         
         
-        # Reverse to show oldest to newest
-        # rows = list(reversed(rows))
-        
-        # Format for chart: convert null values to 0, create x-axis index
-        # result = [
-        #     {
-        #         "x": idx + 1,
-        #         "detected_errors": safe_int(row[0])
-        #     }
-        #     for idx, row in enumerate(rows)
-        # ]
-        
         return averages
     except Exception as e:
         print(f"[/api/results/detected-errors] Error: {str(e)}")
@@ -185,18 +173,6 @@ def get_high_quality_errors(projectid:int):
         
 
 
-        
-        # Reverse to show oldest to newest
-        # rows = list(reversed(rows))
-        
-        # Format for chart: convert null values to 0, create x-axis index
-        # result = [
-        #     {
-        #         "x": idx + 1,
-        #         "high_quality_errors": safe_int(row[0])
-        #     }
-        #     for idx, row in enumerate(rows)
-        # ]
         
         return averages
     except Exception as e:
