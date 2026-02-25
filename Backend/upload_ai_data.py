@@ -22,7 +22,6 @@ class ErrorRecord(BaseModel):
     error_type: str
     was_fixed: bool
 
-
 class DebugReportSummary(BaseModel):
     total_errors_identified: Optional[int] = 0
     errors_fixed: Optional[int] = 0
@@ -45,6 +44,7 @@ class DebugReport(BaseModel):
 class SaveJsonRequest(BaseModel):
     json_data: DebugReport
     prompt: Optional[str] = ""
+    test_round: Optional[int] = 1  # Add test_round to SaveJsonRequest
 
 
 @router.post("/save_json_data")
@@ -56,6 +56,7 @@ async def save_json_data(request: SaveJsonRequest):
     try:
         report = request.json_data
         prompt = request.prompt
+        test_round = request.test_round if hasattr(request, 'test_round') else 1
         
         print(f"Received JSON report for project: {report.project_name}")
         print(f"Full report data: {report.dict()}")
@@ -76,24 +77,24 @@ async def save_json_data(request: SaveJsonRequest):
         )
         print(f"Inserted configuration with ID: {config_id}")
         
-        # Insert results/fixes
+        # Insert results/fixes into 'results' table
         insert_fixes(
             number_of_fixes=report.number_of_fixes,
             duration=report.total_time_spent_minutes,
             tokens=0,
             project_id=project_id,
             config_id=config_id,
-            run_time=1 # Placeholder for actual run time from report
+            run_time=test_round if test_round else 1
         )
         print(f"Inserted fixes: {report.number_of_fixes}")
         
-        # Insert error records (array of errors)
+        # Insert error records (array of errors) into error_records table
         errors_list = [error.dict() for error in report.errors]
         inserted_errors = save_error_records(
             errors_list, 
             project_id=project_id, 
             config_id=config_id,
-            run_time=1 # Placeholder for actual run time from report
+            run_time=test_round if test_round else 1
         )
         print(f"Inserted {inserted_errors} error records")
         
