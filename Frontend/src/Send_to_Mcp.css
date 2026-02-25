@@ -56,9 +56,7 @@
   width: auto; /* Override the 100% width from .sendtomcp button */
 }
 
-.test-round-input {
-  width: 200px;
-}
+
 
 .save-report-area button:hover {
   background-color: #0284c7 !important;
