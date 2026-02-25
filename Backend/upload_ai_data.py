@@ -82,7 +82,8 @@ async def save_json_data(request: SaveJsonRequest):
             duration=report.total_time_spent_minutes,
             tokens=0,
             project_id=project_id,
-            config_id=config_id
+            config_id=config_id,
+            run_time=1 # Placeholder for actual run time from report
         )
         print(f"Inserted fixes: {report.number_of_fixes}")
         
@@ -91,7 +92,8 @@ async def save_json_data(request: SaveJsonRequest):
         inserted_errors = save_error_records(
             errors_list, 
             project_id=project_id, 
-            config_id=config_id
+            config_id=config_id,
+            run_time=1 # Placeholder for actual run time from report
         )
         print(f"Inserted {inserted_errors} error records")
         
