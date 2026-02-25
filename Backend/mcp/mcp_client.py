@@ -71,13 +71,15 @@ class MCPClient:
                 for msg in all_messages:
                      combined_text += msg['result']['content'][0]['text'] + "\n\n"
             
+                # Return in the format frontend expects: array of messages
                 return {
-                "result": {
+                "result": [{
+                    "role": "assistant",
                     "content": [{
                         "type": "text",
-                        "text": combined_text
+                        "text": combined_text.strip()
                     }]
-                    }
+                }]
                 }
                     
                     
