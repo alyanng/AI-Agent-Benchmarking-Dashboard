@@ -53,10 +53,18 @@
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
-  width: auto; /* Override the 100% width from .sendtomcp button */
+  
 }
 
+.save-report-button {
+  width: 45%;
+}
 
+.test-round-input {
+  width: 45%;
+  padding: 10px;
+  margin: 10px 0;
+}
 
 .save-report-area button:hover {
   background-color: #0284c7 !important;

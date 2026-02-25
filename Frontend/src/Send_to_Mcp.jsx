@@ -589,12 +589,13 @@ function Send_to_Mcp(data) {
             {saveStatus}
           </p>
           <input
+            className="test-round-input"
             type="text"
             placeholder="Enter test round (e.g., 1, 2, 3)"
             value={testRound}
             onChange={handleCurrentTestRound}
           />
-          <button onClick={handleSaveReport}>
+          <button className="save-report-button" onClick={handleSaveReport}>
             💾 Save Report to Database
           </button>
         </div>
