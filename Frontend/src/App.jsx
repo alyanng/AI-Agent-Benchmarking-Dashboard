@@ -20,7 +20,7 @@ function App() {
         <Route path="/projects" element={<Projects />} />
         <Route path="/configurations/:projectId" element={<Configurations />} />
         <Route path="/errors" element={<Errors />} />
-        <Route path="/errors/:configurationId" element={<Errors />} />
+        <Route path="/errors/:configurationId/:run_time" element={<Errors />} />
         <Route path="/configurations/:projectId" element={<Configurations />} />
         <Route path="/agent-performance/:projectId" element={<AgentPerformance />} />
         <Route path="/projects" element={<Projects />} /> {/* Projects list page */}

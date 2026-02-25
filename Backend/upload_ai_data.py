@@ -82,7 +82,8 @@ async def save_json_data(request: SaveJsonRequest):
             duration=report.total_time_spent_minutes,
             tokens=0,
             project_id=project_id,
-            config_id=config_id
+            config_id=config_id,
+            run_time=1 # Placeholder for actual run time from report
         )
         print(f"Inserted fixes: {report.number_of_fixes}")
         
@@ -91,7 +92,8 @@ async def save_json_data(request: SaveJsonRequest):
         inserted_errors = save_error_records(
             errors_list, 
             project_id=project_id, 
-            config_id=config_id
+            config_id=config_id,
+            run_time=1 # Placeholder for actual run time from report
         )
         print(f"Inserted {inserted_errors} error records")
         
@@ -134,7 +136,8 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
         "number_of_errors_from_raygun": data.get("number_of_errors_from_raygun"),
         "errors": data.get("errors"),
         "prompt": prompt,
-        "fixes": data.get("number_of_fixes")
+        "fixes": data.get("number_of_fixes"),
+        "run_time":data.get("run_time")
     }
 
     # Insert project into 'projects' table
@@ -148,7 +151,7 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
     config_id = insert_configurations(
         system_prompt=parsed_data.get("prompt"),
         model = "",
-        project_id = project_id
+        project_id = project_id,
     )
 
     #Calls function from store_results_info file to insert results into db
@@ -157,11 +160,13 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
     duration=parsed_data.get("total_time_spent_minutes", 0),
     tokens = 0,
     project_id = project_id,
-    config_id = config_id
+    config_id = config_id, 
+    run_time = parsed_data.get("run_time", 0)
     )
 
     errors = parsed_data.get("errors", [])
-    inserted = save_error_records(errors, project_id=project_id, config_id=config_id)
+    run_time =  parsed_data.get("run_time")
+    inserted = save_error_records(errors,project_id=project_id, config_id=config_id ,run_time=run_time)
 
 
 
@@ -176,7 +181,7 @@ async def upload_ai_json(file: UploadFile = File(...), prompt: Optional[str] = F
 @router.post("/upload_system_prompt")
 async def upload_system_prompt(projectid: int, prompt: Optional[str] = Form(None)):
     config_id = insert_configurations(system_prompt= prompt, model="", project_id =projectid)
-    results_id = insert_fixes(0, 0, 0, projectid, config_id)
+    results_id = insert_fixes(0, 0, 0, projectid, config_id, 0)
     return {
         "success": True,
         "configid": config_id,

@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import './Dashboard.css';
-import { useParams, useNavigate } from 'react-router-dom'; 
-import Accuracy_graph from "../Accuracy_graph";
+import React, { useState, useEffect } from "react";
+import "./Dashboard.css";
+import { useParams, useNavigate } from "react-router-dom";
+import Accuracy_graph from "../Accuracy_graph.jsx";
+import ChartArea from "./ChartArea.jsx";
+import HighQualityErrorsBarChart from "./HighQualityErrorsBarChart.jsx";
+import Model_graph from "./Model_graph.jsx";
 import {
   ResponsiveContainer,
   BarChart,
@@ -11,25 +14,30 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
-} from 'recharts';
+} from "recharts";
 import CombinedGraph from "../combined";
 import StabilityGraph from "../stability";
 import MetricChart from "../MetricChart";
 import NavBar from "../NavBar";
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 /**
  * Dashboard Page
- * 
+ *
  * Displays the detected errors bar chart and other analytics.
  * This is the main page for analyzing test results.
  */
 const Dashboard = () => {
-  const { projectId } = useParams(); 
+  const { projectId } = useParams();
   const [detectedData, setDetectedData] = useState([]);
   const [highData, setHighData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [accuracydata, setAccuracydata] = useState([]);
+  const [fixdata, setFixdata] = useState([]);
+  const [modeldata, setModeldata] = useState([]);
+  const [combinedata, setCombinedata] = useState([]);
+  const [stabilitydata, setStabilitydata] = useState([]);
 
   useEffect(() => {
     let mounted = true;
@@ -38,37 +46,35 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://localhost:8000/api/results/detected_errors?projectid=${projectId}`)
-        const response2 = await fetch(`http://localhost:8000/api/results/high_quality_errors?projectid=${projectId}`)
-        // if (!response) throw new Error(`Detected errors HTTP ${res1.status}`);
-        // if (!res2.ok) throw new Error(`High quality errors HTTP ${res2.status}`);
+        const [r1, r2, r3, r4, r5, r6, r7] = await Promise.all([
+          fetch(
+            `http://localhost:8000/api/results/detected_errors?projectid=${projectId}`,
+          ),
+          fetch(
+            `http://localhost:8000/api/results/high_quality_errors?projectid=${projectId}`,
+          ),
+          fetch(`${API_BASE_URL}/get_config_data?project_id=${projectId}`),
+          fetch(`${API_BASE_URL}/get_performance_data?project_id=${projectId}`),
+          fetch(`${API_BASE_URL}/get_config_data_new?project_id=${projectId}`),
+          fetch(`${API_BASE_URL}/get_combined_data?project_id=${projectId}`),
+          fetch(`${API_BASE_URL}/get_stability_data?project_id=${projectId}`),
+        ]);
 
-        const data = await response.json()
-        const data2 = await response2.json()
+        const data = await r1.json();
+        const data2 = await r2.json();
+        const data3 = await r3.json();
+        const data4 = await r4.json();
+        const data5 = await r5.json();
+        const data6 = await r6.json();
+        const data7 = await r7.json();
 
-        // const d1 = Array.isArray(json1)
-        //   ? json1.map((r) => ({
-        //       x: r && typeof r.x !== 'undefined' ? r.x : null,
-        //       detected_errors:
-        //         r && r.detected_errors != null && !Number.isNaN(Number(r.detected_errors))
-        //           ? Number(r.detected_errors)
-        //           : 0,
-        //     }))
-        //   : [];
-
-        // const d2 = Array.isArray(json2)
-        //   ? json2.map((r) => ({
-        //       x: r && typeof r.x !== 'undefined' ? r.x : null,
-        //       high_quality_errors:
-        //         r && r.high_quality_errors != null && !Number.isNaN(Number(r.high_quality_errors))
-        //           ? Number(r.high_quality_errors)
-        //           : 0,
-        //     }))
-        //   : [];
-
-          setDetectedData(data);
-          setHighData(data2);
-
+        setDetectedData(data);
+        setHighData(data2);
+        setAccuracydata(data3);
+        setFixdata(data4);
+        setModeldata(data5);
+        setCombinedata(data6);
+        setStabilitydata(data7);
       } catch (err) {
         if (mounted) setError(err.message || String(err));
       } finally {
@@ -82,349 +88,94 @@ const Dashboard = () => {
     };
   }, [projectId]);
 
-  
-  // const sharedMaxYRaw = Math.max(
-  //   0,
-  //   ...detectedData.map((d) => d.errors ?? 0),
-  //   ...highData.map((d) => d.high_quality_errors ?? 0)
-  // );
-
-  
-  // const sharedMaxY = Math.ceil(sharedMaxYRaw / 4) * 4 || 0;
-
   return (
     <>
       <NavBar />
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1>Results Dashboard</h1>
-        <p>Analyzing detected errors across all test results</p>
-      </div>
+      <div className="dashboard-container">
+        <div className="dashboard-header">
+          <h1>Results Dashboard</h1>
+        </div>
 
-      <div className="dashboard-content">
-        <div className="chart-section">
-          <div className="chart-wrapper" style={{ width: '100%', height: 300 }}>
-            <ChartArea data={detectedData} loading={loading} error={error}/>
-          
-            <HighQualityErrorsBarChart data={highData} loading={loading} error={error}/>
-          </div>
+        <div className="dashboard-content">
+          <div className="chart-section">
 
-          <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
-            <ChartAreaCompareModels />
-          </div>
+{projectId === '1' && (
+  <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
+    <Model_graph data={modeldata} />
+  </div>
+)}
 
-          <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
-            <Combined/>
-          </div>
+{projectId !== '1' && (<>
 
-          <div className="chart-wrapper" style={{ width: '100%', height: 500 }}>
-            <Stability/>
-          </div>
+            <div
+              className="chart-wrapper"
+              style={{ width: "100%", height: 300 }}
+            >
+              <ChartArea data={detectedData} loading={loading} error={error} />
 
-          <div className="chart-wrapper" style={{ width: '100%', height: 900 }}>
-            <Fixes/>
-          </div>
-         
-    <div className="chart-wrapper" style={{ width: '100%', height: 400 }}>
-      <Accuracy />
-    </div>
+              <HighQualityErrorsBarChart
+                data={highData}
+                loading={loading}
+                error={error}
+              />
+            </div>
+
+            {/* <div
+              className="chart-wrapper"
+              style={{ width: "100%", height: 500 }}
+            >
+              <Model_graph data={modeldata} />
+            </div> */}
+
+             <div className="chart-wrapper" style={{ width: "100%", height: 500 }}> <Accuracy_graph data={accuracydata} /></div>
+
+            <div
+              className="chart-wrapper"
+              style={{ width: "100%", height: 500 }}
+            >
+              <CombinedGraph data={combinedata} />
+            </div>
+
+            <div
+              className="chart-wrapper"
+              style={{ width: "100%", height: 500 }}
+            >
+              <StabilityGraph data={stabilitydata} />
+            </div>
+
+            <div
+              className="chart-wrapper"
+              style={{ width: "100%", height: 500 }}
+            >
+              <Fixes data={fixdata} />
+            </div>
+
+           
+</>)}
+</div>
         </div>
       </div>
-    </div>
     </>
   );
 };
 
-// ChartArea component kept inside this file per requirement (no separate file)
-function ChartArea({ data, loading, error}) {
-  if (loading) {
-    return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>Loading chart data...</div>;
-  }
-  if (error) {
-    return <div style={{ width: '100%', textAlign: 'center', color: 'red', paddingTop: 20 }}>Error loading data: {error}</div>;
-  }
+function Fixes({ data }) {
   if (!data || data.length === 0) {
-    return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>No data available</div>;
+    return <div>Loading...</div>;
   }
-
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="configid" label={{ value: 'System prompt', position: 'insideBottomRight', offset: -10 }} />
-        <YAxis label={{ value: 'Detected Errors', angle: -90, position: 'insideLeft' }} />
-        <Tooltip formatter={(value) => `${value.toFixed(2)}}`} labelFormatter={(label) => `System prompt #${label}`} />
-        <Bar dataKey="error" fill="#3b82f6" />
-      </BarChart>
-    </ResponsiveContainer>
-  );
-}
-
-function HighQualityErrorsBarChart({ data, loading, error}) {
-  if (loading) {
-    return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>Loading chart data...</div>;
-  }
-  if (error) {
-    return <div style={{ width: '100%', textAlign: 'center', color: 'red', paddingTop: 20 }}>Error loading data: {error}</div>;
-  }
-  if (!data || data.length === 0) {
-    return <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>No data available</div>;
-  }
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="configid" label={{ value: 'System prompt', position: 'insideBottomRight', offset: -10 }} />
-        <YAxis label={{ value: 'High Quality Errors', angle: -90, position: 'insideLeft' }} />
-        <Tooltip formatter={(value) => `${value.toFixed(2)}}`} labelFormatter={(label) => `System #${label}`} />
-        <Bar dataKey="high-quality" fill="#3b82f6" />
-      </BarChart>
-    </ResponsiveContainer>
-  );
-}
-
-// ChartAreaCompareModels kept inside this file per requirement (no separate file)
-function ChartAreaCompareModels() {
-  const { projectId } = useParams(); 
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchData() {
-      setLoading(true);
-      setError(null);
-      try {
-        // TODO: change project_id as needed
-        // const projectId = 2;
-        const limit = 50;
-
-        const res = await fetch(
-          `http://localhost:8000/api/results/compare_ai_models?project_id=${projectId}&limit=${limit}`
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-
-        // 1) sanitize raw rows
-        const rows = Array.isArray(json)
-          ? json.map((r) => ({
-              model: r && r.model ? String(r.model) : 'Unknown',
-              number_of_fixes:
-                r && r.number_of_fixes != null && !Number.isNaN(Number(r.number_of_fixes))
-                  ? Number(r.number_of_fixes)
-                  : 0,
-              duration:
-                r && r.duration != null && !Number.isNaN(Number(r.duration)) ? Number(r.duration) : 0,
-              tokens:
-                r && r.tokens != null && !Number.isNaN(Number(r.tokens)) ? Number(r.tokens) : 0,
-            }))
-          : [];
-
-        // 2) aggregate by model
-        const byModel = new Map();
-        for (const row of rows) {
-          const key = row.model;
-
-          if (!byModel.has(key)) {
-            byModel.set(key, {
-              model: key,
-              total_fixes: 0,
-              total_duration: 0,
-              total_tokens: 0,
-            });
-          }
-
-          const agg = byModel.get(key);
-          agg.total_fixes += row.number_of_fixes;
-          agg.total_duration += row.duration;
-          agg.total_tokens += row.tokens;
-        }
-
-        // 3) build chart data (speed = fixes per minute)
-        const aggregated = Array.from(byModel.values()).map((m) => ({
-          model: m.model,
-          total_fixes: m.total_fixes,
-          speed: m.total_duration > 0 ? Number((m.total_fixes / m.total_duration).toFixed(3)) : 0,
-          total_tokens: m.total_tokens,
-          total_duration: Number(m.total_duration.toFixed(2)), // optional for tooltip
-        }));
-
-        if (mounted) setData(aggregated);
-      } catch (err) {
-        if (mounted) setError(err.message || String(err));
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    fetchData();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  if (loading) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>
-        Loading chart data...
+    <div style={{ display: "flex", gap: "100px" ,alignItems:"flex-start" }}>
+      <div style={{ flex: 1,minWidth: 500 }}>
+        <h3 style={{ textAlign: 'center' }}>Average Fixed Errors per Prompt</h3>
+        <MetricChart data={data} yKey="fixes" yLabel="Errors Fixed" />
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', color: 'red', paddingTop: 20 }}>
-        Error loading data: {error}
+      <div style={{ flex: 1,minWidth: 500 }}>
+        <h3 style={{ textAlign: 'center' }}>Average Duration per Prompt (Minutes)</h3>
+        <MetricChart data={data} yKey="duration" yLabel="Duration" />
       </div>
-    );
-  }
-
-  if (!data || data.length === 0) {
-    return (
-      <div style={{ width: '100%', textAlign: 'center', paddingTop: 40 }}>
-        No data available
-      </div>
-    );
-  }
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 40 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-
-        <XAxis
-          dataKey="model"
-          interval={0}
-          angle={-15}
-          textAnchor="end"
-          height={60}
-          label={{ value: 'AI Model', position: 'insideBottomRight', offset: -10 }}
-        />
-
-        <YAxis
-          yAxisId="left"
-          label={{ value: 'Fixes / Speed', angle: -90, position: 'insideLeft' }}
-        />
-        <YAxis
-          yAxisId="right"
-          orientation="right"
-          label={{ value: 'Tokens', angle: -90, position: 'insideRight' }}
-        />
-
-        <Tooltip
-          formatter={(value, name, props) => {
-            if (name === 'total_fixes') return [`${value}`, 'Total Fixes'];
-            if (name === 'speed') return [`${value}`, 'Speed (fixes/min)'];
-            if (name === 'total_tokens') return [`${value}`, 'Total Tokens'];
-            return [`${value}`, name];
-          }}
-          labelFormatter={(label) => `Model: ${label}`}
-        />
-
-        {/* requires: import { Legend } from 'recharts' */}
-        <Legend />
-
-        {/* side-by-side bars */}
-        <Bar yAxisId="left" dataKey="total_fixes" name="Total Fixes" fill="#3b82f6" />
-        <Bar yAxisId="left" dataKey="speed" name="Speed (fixes/min)" fill="#22c55e" />
-        <Bar yAxisId="right" dataKey="total_tokens" name="Total Tokens" fill="#f59e0b" />
-      </BarChart>
-    </ResponsiveContainer>
-  );
-}
-
-function Combined() {
-  const { projectId } = useParams()
-  return <CombinedGraph projectId = {projectId}/>;
-}
-
-function Stability() {
-  const { projectId } = useParams()
-  return <StabilityGraph projectId = {projectId}/>;
-}
-
-function Accuracy(){
-  
- const { projectId } = useParams()
-// const projectId = 2;
-    const [configurations, setConfigurations] = useState([])
-    const navigate = useNavigate()
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-   
-    
-    useEffect(() => {
-            const fetchData = async () => {
-                try{
-                    const configResponse = await fetch (`${API_BASE_URL}/get_config_data?project_id=${projectId}`)
-                    const configData = await configResponse.json()
-                    setConfigurations(configData)
-                    setLoading(false)
-
-                } catch(err) {
-                    console.error('Error fetching configurations:', err)
-                    setError(err.message)
-                    setLoading(false)
-            }
-            }
-
-        fetchData()
-    }, [projectId])
-
-    return ( <Accuracy_graph configdata={configurations}/> );
- 
-}
-
-function Fixes() {
-   const { projectId } = useParams();
-  // const projectId = 2;
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // CHANGED: fetch all prompts for the project
-        const res = await fetch(
-          `${API_BASE_URL}/get_performance_data?project_id=${projectId}`
-        );
-
-        const json = await res.json();
-        setData(json);
-        setLoading(false);
-      } catch (err) {
-        console.error("Failed to fetch performance data:", err);
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [projectId]);
-  return (
-    <div>
-      <h3>Average Fixed Errors per Prompt</h3>
-      <MetricChart data={data} yKey="fixes" yLabel="Errors Fixed" />
-    
-      <h3>Average Duration per Prompt (Minutes)</h3>
-      <MetricChart data={data} yKey="duration" yLabel="Duration" />
-
+      {/* items.map((item, index) => <Bar key={index} ... />) */}
     </div>
-  )
+  );
 }
-
-
-
-
-
 
 export default Dashboard;

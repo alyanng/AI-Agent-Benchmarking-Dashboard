@@ -14,10 +14,11 @@ class ErrorRecord:
     was_fixed: bool
     project_id: str
     config_id: int
+    run_time : int
 
 from database import get_conn
 
-def save_error_records(errors: list, project_id = None, config_id: int = None) -> int:
+def save_error_records(errors: list, project_id = None, config_id: int = None, run_time : int=None) -> int:
     """
     Save error records into postgres.
     Returns number of newly inserted rows.
@@ -29,26 +30,29 @@ def save_error_records(errors: list, project_id = None, config_id: int = None) -
         with conn:
             with conn.cursor() as cur:
                 for e in errors:
-                    error_id = e.get("error_id")
+                    error_name = e.get("error_id")
                     error_type = e.get("error_type")
                     was_fixed = e.get("was_fixed", False)
                     configuration_id = config_id
-
-                    if not error_id or not error_type:
+        
+                    print(f"Inserting: error_name={error_name}, error_type={error_type}")  
+                    if not error_name or not error_type:
                         continue
 
                     cur.execute(
                         """
                         INSERT INTO error_records
-                        (error_id, error_type, was_fixed, project_id, configuration_id)
-                        VALUES (%s, %s, %s, %s, %s)
-                        ON CONFLICT (error_id) DO NOTHING
+                        (error_name, error_type, was_fixed, project_id, configuration_id,run_time)
+                        VALUES (%s, %s, %s, %s, %s,%s)
                         """,
-                        (str(error_id), str(error_type), bool(was_fixed), int(project_id) if project_id else None, configuration_id)
+                        (str(error_name), str(error_type), bool(was_fixed), int(project_id) if project_id else None, configuration_id, int(run_time) if run_time else None)
                     )
 
                     if cur.rowcount == 1:
                         inserted += 1
+                        print(f"Insert successful, rowcount={cur.rowcount}") 
+                    else:
+                        print(f"Insert failed, rowcount={cur.rowcount}") 
     finally:
         conn.close()
 

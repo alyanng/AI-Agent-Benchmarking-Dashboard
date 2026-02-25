@@ -26,9 +26,13 @@ def get_stability_results(project_id):
         number_of_fixes,
         high_quality_errors,
         detected_errors,
-        configuration_id
+        configuration_id,
+        false_positives
     FROM results
     WHERE project_id = %s
+    AND NOT (
+    run_time = 0
+    )
     ORDER BY configuration_id ASC
     """,
     (project_id,)
@@ -42,6 +46,7 @@ def get_stability_results(project_id):
             "high-quality-errors":row[1],
             "error":row[2],
             "configid":row[3],
+            "false-positives":row[4]
         })
     cur.close()
     conn.close()
@@ -54,27 +59,27 @@ def calculate_stability(data):
     configs = {}
     for d in data:
         config = d.get("configid")
-        error = d.get("error")
+        false_positives = d.get("false-positives")
 
         if config not in configs:
             configs[config] = []
-        configs[config].append(error)
+        configs[config].append(false_positives)
 
     #creates list
     std_devs = []
-    for config, errors in configs.items():
-        if len(errors) > 1:
-           std_dev = statistics.stdev(errors)
+    for config, false_positives in configs.items():
+        if len(false_positives) > 1:
+           std_dev = statistics.stdev(false_positives)
            std_devs.append({
                "configid":config,
                "std_dev":std_dev
             })
            
-        else:
-            std_devs.append({
-                "configid":config,
-                "std_dev":0
-            })
+        # else:
+        #     std_devs.append({
+        #         "configid":config,
+        #         "std_dev":0
+        #     })
     return std_devs
       
 

@@ -30,12 +30,12 @@ def insert_configurations(system_prompt, model, project_id):
     return config_id
 
 #Inserts a result into the database
-def insert_fixes(number_of_fixes, duration, tokens, project_id, config_id):
+def insert_fixes(number_of_fixes, duration, tokens, project_id, config_id, run_time):
     conn = connect_to_db()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO results (number_of_fixes, duration, tokens, project_id, configuration_id) VALUES (%s, %s, %s, %s, %s) RETURNING results_id;",
-        (number_of_fixes, duration, tokens, project_id, config_id)
+        "INSERT INTO results (number_of_fixes, duration, tokens, project_id, configuration_id, run_time) VALUES (%s, %s, %s, %s, %s,%s) RETURNING results_id;",
+        (number_of_fixes, duration, tokens, project_id, config_id, run_time)
     )
     new_id = cur.fetchone()[0]
     conn.commit()
@@ -59,10 +59,13 @@ def get_config_results(project_id):
         r.detected_errors,
         r.results_id,
         AVG(r.high_quality_errors) OVER (PARTITION BY c.configuration_ID) as avg_hq_errors,
-        AVG(r.detected_errors) OVER (PARTITION BY c.configuration_ID) as avg_detected_errors
+        AVG(r.detected_errors) OVER (PARTITION BY c.configuration_ID) as avg_detected_errors,
+        r.model,
+        r.run_time
     FROM configuration c
     INNER JOIN results r ON c.configuration_ID = r.configuration_id
     WHERE c.project_id = %s
+    AND (r.run_time IS NOT NULL AND r.run_time != 0)
     ORDER BY r.results_id 
     """,
     (project_id,)
@@ -81,7 +84,10 @@ def get_config_results(project_id):
             "detected_errors":row[6],
             "results_id":row[7],
             "avg_hq_errors": row[8],
-            "avg_detected_errors":row[9]
+            "avg_detected_errors":row[9],
+            "r-model":row[10],
+            "run_time":row[11]
+            
         })
     cur.close()
     conn.close()
@@ -89,3 +95,76 @@ def get_config_results(project_id):
     
     
 
+def get_config_resultnew(project_id):
+    
+    conn = connect_to_db()
+    cur = conn.cursor()
+    cur.execute(
+    """
+    SELECT 
+        r.results_id,
+        r."model",
+        r.number_of_fixes
+    FROM results r
+    WHERE r.project_id = %s
+    AND (r.run_time IS NOT NULL AND r.run_time != 0)
+    ORDER BY r.results_id
+    """,
+    (project_id,)
+    )
+    rows = cur.fetchall()
+
+    configAndResults = []
+    for row in rows:
+        configAndResults.append({
+            "results_id": row[0],
+            "model": row[1],
+            "fixes": row[2],
+        })
+    cur.close()
+    conn.close()
+    return configAndResults   
+    
+    #Fetches configurations of a project from database and returns it as an array
+def get_config_results_forResult(project_id):
+    conn = connect_to_db()
+    cur = conn.cursor()
+    cur.execute(
+    """
+    SELECT 
+        r.configuration_ID,
+        r.number_of_fixes,
+        r.duration,
+        r.high_quality_errors,
+        r.detected_errors,
+        r.results_id,
+        r.model,
+        r.run_time,
+        c.system_prompt
+    FROM results r
+    LEFT JOIN configuration c ON c.configuration_ID = r.configuration_id
+    WHERE r.project_id = %s
+    ORDER BY r.results_id 
+    """,
+    (project_id,)
+)
+    rows = cur.fetchall()
+
+    configAndResults =[]
+    for row in rows:
+        configAndResults.append({
+            "configid": row[0],
+            "fixes": row[1],
+            "duration": row[2],
+            "high_quality_errors":row[3],
+            "detected_errors":row[4],
+            "results_id":row[5],
+            "model":row[6],
+            "run_time":row[7],
+            "prompt":row[8]
+            
+        })
+    cur.close()
+    conn.close()
+    return configAndResults
+    

@@ -76,6 +76,9 @@ def get_detected_errors(projectid:int):
             SELECT detected_errors, configuration_id
             FROM results
             WHERE project_id = %s
+            AND NOT (
+            run_time = 0
+            )
             ORDER BY results_id ASC
         """, (projectid,))
         
@@ -145,6 +148,9 @@ def get_high_quality_errors(projectid:int):
             SELECT high_quality_errors, configuration_id
             FROM results
             WHERE project_id = %s
+            AND NOT (
+            run_time = 0
+            )
             ORDER BY results_id ASC
         """, (projectid,))
         
@@ -265,7 +271,7 @@ app.include_router(project_router)
 # Endpoint: list error records
 # -----------------------------------
 @app.get("/api/errors")
-def list_errors(configuration_id: int = None):
+def list_errors(configuration_id: int = None, run_time:int = None):
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -274,9 +280,10 @@ def list_errors(configuration_id: int = None):
             cur.execute("""
                 SELECT error_id, error_type, was_fixed, project_id, configuration_id
                 FROM error_records
-                WHERE configuration_id = %s
+                WHERE configuration_id = %s AND run_time = %s
                 ORDER BY error_id
-            """, (configuration_id,))
+    """,
+    (configuration_id, run_time))
         else:
             cur.execute("""
                 SELECT error_id, error_type, was_fixed, project_id, configuration_id
@@ -324,6 +331,7 @@ def get_performance_data(project_id: int):
                 AVG(duration) AS avg_duration
             FROM results
             WHERE project_id = %s
+            AND (run_time IS NOT NULL AND run_time != 0)
             GROUP BY configuration_id
             ORDER BY configuration_id
         """, (project_id,))
