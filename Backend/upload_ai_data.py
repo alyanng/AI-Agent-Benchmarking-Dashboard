@@ -6,9 +6,7 @@ from pydantic import BaseModel
 from store_error_info import save_error_records
 from datetime import datetime
 
-
 from results_and_configuration_info import insert_configurations, insert_fixes
-from store_error_info import save_error_records
 from projects_info import insert_project
 
 
