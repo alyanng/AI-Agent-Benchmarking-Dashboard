@@ -265,7 +265,6 @@ def compare_ai_models(project_id: int, limit: int = 50):
 
 
 
-app.include_router(project_router)
 
 # -----------------------------------
 # Endpoint: list error records
