@@ -25,7 +25,7 @@ async def call_mcp_tool(request:MCPRequest):
    
         # return json.loads(result.text)
    
-        print("result:",result)
+        print("result:", result)
         return {
         "success": True,
         "data":result
