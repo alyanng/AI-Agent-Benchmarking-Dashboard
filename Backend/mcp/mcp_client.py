@@ -39,7 +39,7 @@ class MCPClient:
                 self.url,
                 json=payload,
                 headers=headers,
-                timeout=600.0
+                timeout=1800.0
             )
             
             
