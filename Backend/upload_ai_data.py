@@ -1,16 +1,12 @@
-
 from fastapi import APIRouter, UploadFile, File, Form
 import json
 from typing import Optional, List
 from pydantic import BaseModel
-from store_error_info import save_error_records
 from datetime import datetime
 
-
-from results_and_configuration_info import insert_configurations, insert_fixes
 from store_error_info import save_error_records
+from results_and_configuration_info import insert_configurations, insert_fixes
 from projects_info import insert_project
-
 
 
 router = APIRouter()
@@ -187,4 +183,3 @@ async def upload_system_prompt(projectid: int, prompt: Optional[str] = Form(None
         "configid": config_id,
         "resultid": results_id
     }
-
