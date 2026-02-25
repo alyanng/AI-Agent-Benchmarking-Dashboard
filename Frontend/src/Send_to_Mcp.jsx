@@ -324,7 +324,7 @@ function validateDebugReport(data) {
     return false;
   }
   
-  console.log("Validation passed!");
+  console.log("Validation of debug report passed!");
   return true;
 }
 
@@ -337,6 +337,7 @@ function Send_to_Mcp(data) {
   const [detectedReport, setDetectedReport] = useState(null);
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
+  const [testRound, setTestRound] = useState(1);
 
   function handlePromptChange(event) {
     var inputprompt = event.target.value;
@@ -429,6 +430,7 @@ function Send_to_Mcp(data) {
           if (msg && msg.content && Array.isArray(msg.content)) {
             for (let j = msg.content.length - 1; j >= 0; j--) {
               const block = msg.content[j];
+
               if (block && block.type === 'text' && block.text) {
                 displayContent = block.text;
                 console.log("Found display text, length:", displayContent.length);
@@ -486,6 +488,33 @@ function Send_to_Mcp(data) {
     }
   }
 
+  // Function to test the current testRound
+   function handleCurrentTestRound(event) {
+     var inputTestRound = event.target.value;
+     setTestRound(inputTestRound);
+     console.log("Testing current test round:", testRound);
+   }
+
+  // // Function to send current testRound to backend 
+  // async function handleSendcurrentTestRound() {
+  //   console.log("Testing current test round:", testRound);
+  //   try {      
+  //     var response = await fetch(
+  //       import.meta.env.VITE_API_BASE_URL + "/api/save_test_round",
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           test_round: testRound,
+  //         }),
+  //       },
+  //     );
+  //   } catch (error) {
+  //     console.error("Error in handleSendcurrentTestRound:", error);
+  //   }
+
+  // }
+
   // Function to save detected JSON report to backend
   async function handleSaveReport() {
     if (!detectedReport) {
@@ -504,7 +533,9 @@ function Send_to_Mcp(data) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             json_data: detectedReport,
-            prompt: prompt || ""
+            prompt: prompt || "",
+            test_round: testRound || 1, 
+
           })
         }
       );
@@ -557,6 +588,12 @@ function Send_to_Mcp(data) {
           <p>
             {saveStatus}
           </p>
+          <input
+            type="text"
+            placeholder="Enter test round (e.g., 1, 2, 3)"
+            value={testRound}
+            onChange={handleCurrentTestRound}
+          />
           <button onClick={handleSaveReport}>
             💾 Save Report to Database
           </button>
