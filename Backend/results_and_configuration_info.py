@@ -42,6 +42,7 @@ def insert_fixes(number_of_fixes, duration, tokens, project_id, config_id, run_t
     cur.close()
     conn.close()
     print(f"Inserted row with result_id {new_id}")
+    return new_id
 
 #Fetches configurations of a project from database and returns it as an array
 def get_config_results(project_id):
@@ -167,4 +168,3 @@ def get_config_results_forResult(project_id):
     cur.close()
     conn.close()
     return configAndResults
-    
