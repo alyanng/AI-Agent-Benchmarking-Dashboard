@@ -324,6 +324,12 @@ function validateDebugReport(data) {
     return false;
   }
   
+  // Check run_time field
+  if (typeof data.run_time !== 'number') {
+    console.log("Validation failed: run_time is not a number");
+    return false;
+  }
+  
   console.log("Validation passed!");
   return true;
 }

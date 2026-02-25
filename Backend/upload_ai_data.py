@@ -38,6 +38,7 @@ class DebugReport(BaseModel):
     number_of_fixes: int
     total_time_spent_minutes: int
     number_of_errors_from_raygun: int
+    run_time: int  # Add run_time field to JSON schema
     errors: List[ErrorRecord]
     summary: Optional[DebugReportSummary] = None
 
@@ -82,7 +83,8 @@ async def save_json_data(request: SaveJsonRequest):
             duration=report.total_time_spent_minutes,
             tokens=0,
             project_id=project_id,
-            config_id=config_id
+            config_id=config_id,
+            run_time=report.run_time
         )
         print(f"Inserted fixes: {report.number_of_fixes}")
         
@@ -91,7 +93,8 @@ async def save_json_data(request: SaveJsonRequest):
         inserted_errors = save_error_records(
             errors_list, 
             project_id=project_id, 
-            config_id=config_id
+            config_id=config_id,
+            run_time=report.run_time
         )
         print(f"Inserted {inserted_errors} error records")
         
