@@ -1,16 +1,6 @@
 import psycopg2
-from psycopg2.extras import RealDictCursor
-from contextlib import contextmanager
 import os
 
-
-DB_CONFIG = {
-    'dbname': '',
-    'user': '',  
-    'password': '',      
-    'host': 'localhost',
-    'port': 5432
-}
 
 def get_conn():
     return psycopg2.connect(

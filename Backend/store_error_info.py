@@ -16,7 +16,6 @@ class ErrorRecord:
     config_id: int
     run_time : int
 
-from database import get_conn
 
 def save_error_records(errors: list, project_id = None, config_id: int = None, run_time : int=None) -> int:
     """
