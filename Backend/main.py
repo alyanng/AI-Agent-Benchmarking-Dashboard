@@ -2,15 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from pathlib import Path
+import statistics
+from typing import Optional
 
 # Import your routers
 import upload_ai_data
 import get_ai_data
-from mcp import mcp_router
-from project_routes import router as project_router  # Projects router
+from mcp import router as mcp_router
+from project_routes import router as project_router
 
 from database import get_conn
-import statistics
 
 # -----------------------------------
 # Load environment variables
@@ -23,8 +24,9 @@ load_dotenv(dotenv_path=env_path)
 # -----------------------------------
 app = FastAPI(title="Backend API")
 
+
 # Helper function to safely convert to int
-def safe_int(value):
+def safe_int(value) -> int:
     """Convert value to int, return 0 if null or invalid"""
     if value is None:
         return 0
@@ -33,7 +35,7 @@ def safe_int(value):
     except (ValueError, TypeError):
         return 0
 
-# Define CORS allowed origins
+
 # -----------------------------------
 # CORS settings
 # -----------------------------------
@@ -44,10 +46,10 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,       
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],         
-    allow_headers=["*"],         
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # -----------------------------------
@@ -55,14 +57,15 @@ app.add_middleware(
 # -----------------------------------
 app.include_router(upload_ai_data.router)
 app.include_router(get_ai_data.router)
-app.include_router(project_router)      # Projects endpoint
-app.include_router(mcp_router.router)
+app.include_router(project_router)
+app.include_router(mcp_router)
+
 
 # =============================================
 # Endpoint: Get detected errors from results table
 # =============================================
 @app.get("/api/results/detected_errors")
-def get_detected_errors(projectid:int):
+def get_detected_errors(projectid: int):
     """
     Fetch detected errors from results table.
     Returns data sorted oldest to newest (reversed from query order).
@@ -70,24 +73,22 @@ def get_detected_errors(projectid:int):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        
+
         # Query results table ordered by result_id DESC
         cur.execute("""
             SELECT detected_errors, configuration_id
             FROM results
             WHERE project_id = %s
-            AND NOT (
-            run_time = 0
-            )
+            AND NOT (run_time = 0)
             ORDER BY results_id ASC
         """, (projectid,))
-        
+
         rows = cur.fetchall()
         data = []
         for r in rows:
             data.append({
-                "error":r[0],
-                "configid":r[1],
+                "error": r[0],
+                "configid": r[1],
             })
 
         cur.close()
@@ -101,7 +102,7 @@ def get_detected_errors(projectid:int):
             if config not in configs:
                 configs[config] = []
             configs[config].append(error)
-        
+
         averages = []
         for config, errors in configs.items():
             error = statistics.mean(errors)
@@ -110,8 +111,6 @@ def get_detected_errors(projectid:int):
                 "error": error
             })
 
-        
-        
         return averages
     except Exception as e:
         print(f"[/api/results/detected-errors] Error: {str(e)}")
@@ -122,7 +121,7 @@ def get_detected_errors(projectid:int):
 # Endpoint: Get high quality errors from results table
 # =============================================
 @app.get("/api/results/high_quality_errors")
-def get_high_quality_errors(projectid:int):
+def get_high_quality_errors(projectid: int):
     """
     Fetch high quality errors from results table.
     Returns data sorted oldest to newest (reversed from query order).
@@ -130,18 +129,16 @@ def get_high_quality_errors(projectid:int):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        
+
         # Query results table ordered by result_id DESC
         cur.execute("""
             SELECT high_quality_errors, configuration_id
             FROM results
             WHERE project_id = %s
-            AND NOT (
-            run_time = 0
-            )
+            AND NOT (run_time = 0)
             ORDER BY results_id ASC
         """, (projectid,))
-        
+
         rows = cur.fetchall()
         cur.close()
         conn.close()
@@ -149,8 +146,8 @@ def get_high_quality_errors(projectid:int):
         data = []
         for r in rows:
             data.append({
-                "error":r[0],
-                "configid":r[1],
+                "error": r[0],
+                "configid": r[1],
             })
 
         configs = {}
@@ -170,15 +167,10 @@ def get_high_quality_errors(projectid:int):
                 "high-quality": error
             })
 
-        
-
-
-        
         return averages
     except Exception as e:
         print(f"[/api/results/high_quality_errors] Error: {str(e)}")
         return {"error": str(e)}
-    
 
 
 # =============================================
@@ -244,26 +236,25 @@ def compare_ai_models(project_id: int, limit: int = 50):
 # Endpoint: list error records
 # -----------------------------------
 @app.get("/api/errors")
-def list_errors(configuration_id: int = None, run_time:int = None):
+def list_errors(configuration_id: Optional[int] = None, run_time: Optional[int] = None):
     try:
         conn = get_conn()
         cur = conn.cursor()
-        
+
         if configuration_id is not None:
             cur.execute("""
                 SELECT error_id, error_type, was_fixed, project_id, configuration_id
                 FROM error_records
                 WHERE configuration_id = %s AND run_time = %s
                 ORDER BY error_id
-    """,
-    (configuration_id, run_time))
+            """, (configuration_id, run_time))
         else:
             cur.execute("""
                 SELECT error_id, error_type, was_fixed, project_id, configuration_id
                 FROM error_records
                 ORDER BY error_id
             """)
-        
+
         rows = cur.fetchall()
         cur.close()
         conn.close()
@@ -282,9 +273,11 @@ def list_errors(configuration_id: int = None, run_time:int = None):
         print(f"[/api/errors] Error: {str(e)}")
         raise
 
+
 @app.get("/get_config_data")
 def get_config_data_test(project_id: int):
     return {"message": f"Received project_id: {project_id}"}
+
 
 # -----------------------------------
 # Endpoint: get project-level performance data
@@ -299,7 +292,7 @@ def get_performance_data(project_id: int):
         conn = get_conn()
         cur = conn.cursor()
         cur.execute("""
-            SELECT 
+            SELECT
                 configuration_id,
                 AVG(number_of_fixes) AS avg_fixes,
                 AVG(duration) AS avg_duration
@@ -309,7 +302,7 @@ def get_performance_data(project_id: int):
             GROUP BY configuration_id
             ORDER BY configuration_id
         """, (project_id,))
-        
+
         rows = cur.fetchall()
         cur.close()
         conn.close()
