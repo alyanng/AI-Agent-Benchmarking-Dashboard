@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import psycopg2
 from dataclasses import dataclass
 from pathlib import Path
-from database import get_conn
 
 @dataclass
 class ErrorRecord:
