@@ -1,6 +1,6 @@
 import React,{useState} from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import NavBar from "../NavBar";
+import NavBar from "../components/NavBar";
 
 function AddSystemPrompt(){
     const [prompt,setPrompt] = useState("");

@@ -2,15 +2,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from './Home.jsx';
 import Projects from "./Projects.jsx";
 import Configurations from "./configurations.jsx";
-import StabilityGraph from "./stability.jsx";
-import Dashboard from './dashboardPage/Dashboard.jsx';
-import DetectedErrorsBarChart from './components/DetectedErrorsBarChart.jsx';
-import CombinedGraph from "./combined.jsx";
+import StabilityGraph from "./dashboard_page/stability.jsx";
+import Dashboard from './dashboard_page/Dashboard.jsx';
+// import DetectedErrorsBarChart from './components/DetectedErrorsBarChart.jsx';
+import CombinedGraph from "./dashboard_page/combined.jsx";
 import Errors from "./Errors.jsx";
-import AgentPerformance from "./AgentPerformance.jsx";
-import AddSystemPrompt from "./addSystemPromptPages/add_system_prompt.jsx";
-import ProjectList from './addSystemPromptPages/projectlist.jsx'
-import SystemPromptList from "./addSystemPromptPages/systempromptlist.jsx";
+import AgentPerformance from "./dashboard_page/AgentPerformance.jsx";
+import AddSystemPrompt from "./add_system_prompt_pages/add_system_prompt.jsx";
+import ProjectList from './add_system_prompt_pages/projectlist.jsx'
+import SystemPromptList from "./add_system_prompt_pages/systempromptlist.jsx";
 
 function App() {
   return (

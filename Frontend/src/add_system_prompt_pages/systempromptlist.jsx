@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import NavBar from "../NavBar";
-import ExpandableText from "../ExpandableText";
+import NavBar from "../components/NavBar";
+import ExpandableText from "../components/ExpandableText";
 
 import '../configuration.css';
 import '../Home.css';

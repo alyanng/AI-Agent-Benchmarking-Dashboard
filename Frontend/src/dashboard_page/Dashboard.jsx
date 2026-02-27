@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import { useParams, useNavigate } from "react-router-dom";
-import Accuracy_graph from "../Accuracy_graph.jsx";
+import Accuracy_graph from "./Accuracy_graph.jsx";
 import ChartArea from "./ChartArea.jsx";
 import HighQualityErrorsBarChart from "./HighQualityErrorsBarChart.jsx";
 import Model_graph from "./Model_graph.jsx";
@@ -15,10 +15,10 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import CombinedGraph from "../combined";
-import StabilityGraph from "../stability";
-import MetricChart from "../MetricChart";
-import NavBar from "../NavBar";
+import CombinedGraph from "./combined";
+import StabilityGraph from "./stability";
+import MetricChart from "./MetricChart";
+import NavBar from "../components/NavBar.jsx";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 /**

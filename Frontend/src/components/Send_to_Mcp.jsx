@@ -1,7 +1,7 @@
 import "./Send_to_Mcp.css";
 import React, { useState } from "react";
-import codefixerImg from "../assets/codefixer.png";
-import autohiveImg from "../assets/autohive.png";
+import codefixerImg from "../../assets/codefixer.png";
+import autohiveImg from "../../assets/autohive.png";
 import ReactMarkdown from "react-markdown";
 
 // Helper: Parse and validate JSON from a text string that may contain wrappers

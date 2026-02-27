@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import NavBar from './NavBar';
+import NavBar from './components/NavBar';
 import { useParams } from 'react-router-dom';
 
 export default function Errors() {

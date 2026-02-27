@@ -1,7 +1,7 @@
 import { BarChart, Bar, Line, LineChart, XAxis, YAxis, Label, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import './Home.css'
+import '../Home.css'
 import { useState, useEffect } from 'react';
-import NavBar from "./NavBar";
+import NavBar from "../components/NavBar";
 
 export default function StabilityGraph({data}) {
     // const { projectId } = useParams();

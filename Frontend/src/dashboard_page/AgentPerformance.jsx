@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import NavBar from "./NavBar";
+import NavBar from "../components/NavBar";
 import MetricChart from "./MetricChart";
 
 export default function AgentPerformance() {
