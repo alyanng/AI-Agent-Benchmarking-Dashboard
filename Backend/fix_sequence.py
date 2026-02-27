@@ -38,10 +38,10 @@ def fix_sequence(table_name, id_column, sequence_name):
         cur.execute(f"SELECT setval('{sequence_name}', {max_id});")
         
         conn.commit()
-        print(f"✅ Fixed {table_name}: Set {sequence_name} to {max_id}")
+        print(f"Fixed {table_name}: Set {sequence_name} to {max_id}")
         
     except Exception as e:
-        print(f"❌ Error fixing {table_name}: {str(e)}")
+        print(f"Error fixing {table_name}: {str(e)}")
         conn.rollback()
     finally:
         cur.close()
@@ -49,7 +49,7 @@ def fix_sequence(table_name, id_column, sequence_name):
 
 def fix_all_sequences():
     """Fix all table sequences"""
-    print("🔧 Fixing database sequences...\n")
+    print("Fixing database sequences...\n")
     
     # List of tables and their sequences
     tables_to_fix = [
@@ -62,7 +62,7 @@ def fix_all_sequences():
     for table_name, id_column, sequence_name in tables_to_fix:
         fix_sequence(table_name, id_column, sequence_name)
     
-    print("\n✅ All sequences fixed!")
+    print("\nAll sequences fixed!")
     print("You can now save reports without duplicate key errors.")
 
 if __name__ == "__main__":
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     try:
         fix_all_sequences()
     except Exception as e:
-        print(f"\n❌ Fatal error: {str(e)}")
+        print(f"\nFatal error: {str(e)}")
         print("\nMake sure:")
         print("1. Backend/.env file exists with correct database credentials")
         print("2. PostgreSQL database is running")

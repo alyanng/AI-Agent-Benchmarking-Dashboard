@@ -6,12 +6,12 @@ import time
 # MCP class
 class MCPClient:
     # constructor
-    def __init__(self,url,token):
+    def __init__(self, url, token):
         self.url=url
         self.token=token
     
     
-    async def call_tool(self,tool_name,prompt)->Dict[str,Any]:
+    async def call_tool(self, tool_name, prompt)->Dict[str,Any]:
         
         # Construct the payload
         payload={

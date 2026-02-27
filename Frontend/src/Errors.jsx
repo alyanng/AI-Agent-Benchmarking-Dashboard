@@ -14,8 +14,6 @@ export default function Errors() {
       try {
         setLoading(true);
         setErrMsg("");
-    
-
         let url = `${API_BASE_URL}/api/errors`;
         // if (configurationId) {
         //   url += `?configuration_id=${configurationId}`;
@@ -55,7 +53,7 @@ export default function Errors() {
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
   if (errMsg) return (
     <div style={{ padding: 16, color: "red" }}>
-      <h3>⚠️ Error Loading Records</h3>
+      <h3> Error Loading Records</h3>
       <p><strong>{errMsg}</strong></p>
       <p style={{ fontSize: 12, color: "#666" }}>
         API Base URL: <code>{API_BASE_URL}</code><br/>
