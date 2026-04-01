@@ -14,7 +14,6 @@ class ErrorRecord:
     was_fixed: bool
     project_id: str
     config_id: int
-    run_time : int
 
 from database import get_conn
 
